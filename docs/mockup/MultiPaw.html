@@ -1,0 +1,1134 @@
+<title>MultiPaw Compressor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,700;1,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one fixed 1280 x 720 stage scaled as a piece. Wood cheeks left and right; header with the page flip; page 1 multiband compressor, page 2 multiband sidechain; preview rig under the pages. */
+:root{
+  --bg:#0b0b0d; --plate:#16171a; --plate2:#1e2024; --line:#33363d; --ink:#f4f5f7; --dim:#a9adb8;
+  --title:#e8e9ee; --accent:#02EBBA; --disp:#06080a; --grid:#1b2523;
+  --g:#02EBBA; --y:#FFD100; --o:#F57F01; --r:#FF1383; --b:#6CC9F5; --p:#A43DFF;
+  --sel:#241238; --selb:#CD92FE; --pink:#FF7BB1;
+  --b0:#6CC9F5; --b1:#02EBBA; --b2:#FFD100; --b3:#FF7BB1;
+  --font-ui:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+  --font-num:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+  color-scheme:dark;
+}
+#app[data-look="A"]{--bg:#161638;--plate:#1c1c4a;--plate2:#2C2C62;--line:#3d4a66;--ink:#e8e6e1;--dim:#a8a4c8;--title:#E1CBF4;--accent:#FFA600;--disp:#05060d;--y:#FFA600}
+#app[data-look="B"]{--bg:#0b0b0d;--plate:#15161a;--plate2:#1c1d22;--line:#2b2d34;--ink:#f4f5f7;--dim:#a9adb8;--title:#E1CBF4;--accent:#A43DFF;--disp:#06080a}
+html,body{background:var(--bg);margin:0}
+#stage,#stage *{box-sizing:border-box}
+body{color:var(--ink);font-family:var(--font-ui);padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+#app{background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+#frame{position:relative;flex:none}
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;display:flex;background:#000;user-select:none;-webkit-user-select:none}
+.cheek{width:52px;flex:none;position:relative;cursor:default}
+.cheek canvas{width:100%;height:100%;display:block}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--plate);position:relative}
+.hdr{height:44px;flex:none;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid var(--line);background:var(--plate2)}
+.brand{display:flex;align-items:center;gap:7px;width:176px;flex:none}
+.brand .name{font-style:italic;font-weight:800;font-size:23px;letter-spacing:.5px;color:#fff;line-height:1;display:flex;align-items:baseline;white-space:nowrap}
+.brand .name i{color:var(--accent);font-style:italic;margin-left:1px}
+.brand .s87{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.sp{flex:1}
+button,select,input{font-family:var(--font-ui)}
+.btn{background:var(--plate);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:3px 9px;font-size:14px;letter-spacing:.5px;cursor:pointer;line-height:1.2;white-space:nowrap}
+.btn:hover{border-color:var(--dim)}
+.btn:focus-visible,.knob:focus-visible,.led-hit:focus-visible,.chip:focus-visible,.rh:focus-visible,.seg button:focus-visible,select:focus-visible{outline:2px solid var(--selb);outline-offset:2px}
+.btn.on{background:var(--sel);border-color:var(--selb);color:#E1CBF4}
+.presetbar{display:flex;align-items:center;gap:4px;flex:none}
+.presetbar .pname{width:176px;text-align:center;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+/* page flip */
+.flip{display:flex;border:1px solid var(--selb);border-radius:6px;overflow:hidden;flex:none}
+.flip button{background:var(--plate);color:var(--dim);border:0;padding:4px 10px;font-size:14px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.flip button+button{border-left:1px solid var(--selb)}
+.flip button.on{background:var(--sel);color:#fff}
+.flip .pwr{width:9px;height:9px;border-radius:50%;background:#2a2c31;box-shadow:inset 0 0 2px #000;flex:none}
+.flip .pwr.on{background:var(--g);box-shadow:0 0 6px 1px var(--g)}
+.flip kbd{font-family:var(--font-num);font-size:10px;border:1px solid var(--line);border-radius:3px;padding:0 4px;color:var(--dim)}
+.body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative}
+.page{position:absolute;left:0;top:0;right:0;bottom:40px;padding:6px 8px 0}
+.page[hidden]{display:none}
+.rig{height:40px;flex:none;border-top:1px solid var(--line);background:var(--plate2);display:flex;align-items:center;gap:8px;padding:0 10px;position:absolute;left:0;right:0;bottom:0}
+.rig select,.sel{background:var(--disp);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:2px 4px;font-size:14px;height:24px}
+.rig .hint{font-size:12px;color:var(--dim);white-space:nowrap}
+.rig .tag{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);border:1px dashed var(--line);padding:1px 6px;border-radius:3px;white-space:nowrap}
+.rig label{font-size:12px;color:var(--dim);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.foot{height:24px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;color:var(--dim);letter-spacing:1px;border-top:1px solid var(--line);background:var(--plate2)}
+.cap{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--title);white-space:nowrap}
+canvas{display:block}
+.cv{background:var(--disp);border:1px solid var(--line);border-radius:3px}
+/* knob */
+.kb{display:flex;flex-direction:column;align-items:center;flex:none}
+.kb .kv{font-family:var(--font-num);font-size:10.5px;color:var(--ink);height:13px;white-space:nowrap;line-height:13px}
+.kb .kl{font-size:12px;letter-spacing:.8px;color:var(--title);font-weight:600;white-space:nowrap;line-height:13px;text-transform:uppercase}
+.ro-off .kb .kv{visibility:hidden}
+.knob{cursor:ns-resize;touch-action:none;border-radius:50%;display:block}
+.knob svg{display:block}
+.knob:hover .body{filter:brightness(1.1)}
+.pw{width:16px;height:16px;border-radius:50%;border:1px solid #000;background:#3a0a1c;box-shadow:inset 0 0 3px #000;cursor:pointer;padding:0;flex:none;position:relative}
+.pw.on{background:var(--r);box-shadow:0 0 8px 1px var(--r),inset 0 0 3px rgba(255,255,255,.5)}
+.pw.g.on{background:var(--g);box-shadow:0 0 8px 1px var(--g),inset 0 0 3px rgba(255,255,255,.5)}
+.tgb{background:var(--plate);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:0 6px;font-size:12px;height:20px;cursor:pointer;white-space:nowrap;letter-spacing:.4px}
+.tgb:hover{border-color:var(--dim)}
+.tgb.on{background:var(--sel);border-color:var(--selb);color:#E1CBF4}
+.tgb.yel.on{background:#3a3300;border-color:var(--y);color:var(--y)}
+.seg{display:flex}
+.seg button{background:var(--plate);color:var(--ink);border:1px solid var(--line);padding:0 8px;font-size:13px;height:24px;cursor:pointer;white-space:nowrap}
+.seg button+button{margin-left:-1px}
+.seg button:first-child{border-radius:4px 0 0 4px}.seg button:last-child{border-radius:0 4px 4px 0}
+.seg button.on{background:var(--sel);border-color:var(--selb);color:#E1CBF4;position:relative;z-index:1}
+.rad{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;letter-spacing:.5px;color:var(--ink);background:none;border:0;padding:0 4px;white-space:nowrap}
+.rad .lp{width:11px;height:11px;border-radius:50%;background:#26282c;box-shadow:inset 0 0 2px #000;flex:none}
+.rad.on .lp{background:var(--y);box-shadow:0 0 7px 1px var(--y)}
+.chk{display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;color:var(--ink);background:none;border:0;padding:0;white-space:nowrap}
+.chk .bx{width:13px;height:13px;border:1px solid var(--dim);border-radius:2px;background:var(--disp);flex:none}
+.chk.on .bx{background:var(--accent);border-color:var(--accent)}
+/* page 1 */
+.p1{display:grid;grid-template-columns:104px 1fr 118px;gap:8px;height:248px}
+.sidecol{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.sidecol .row2{display:flex;gap:4px;justify-content:center}
+.ctr{position:relative;min-width:0}
+.gtop{height:44px;display:flex;align-items:center;gap:8px}
+.gtop .mixwrap{position:absolute;left:50%;top:0;transform:translateX(-50%);display:flex;align-items:center;gap:8px}
+.gtop .mixwrap .kb{flex-direction:column}
+.mixnote{font-size:11px;color:var(--dim);letter-spacing:.4px;max-width:150px;line-height:1.05}
+.gright{margin-left:auto;display:flex;gap:6px;align-items:center}
+.msrow{position:relative;height:22px;margin-top:2px}
+.ms{position:absolute;top:0;height:22px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.strips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.strip{border:1px solid var(--line);border-radius:4px;background:var(--plate2);display:flex;flex-direction:column;min-width:0;height:344px;overflow:hidden;position:relative}
+.strip[data-off="1"]{opacity:.42}
+.strip .tpart{height:96px;padding:4px 6px 0;border-bottom:1px solid var(--line);position:relative}
+.strip .l1{display:flex;align-items:center;gap:6px;height:32px}
+.bsel{display:flex;align-items:center;gap:2px;flex:1;min-width:0}
+.bsel .btn{padding:0 5px;height:22px;font-size:12px}
+.bsel .nm{flex:1;min-width:0;height:22px;background:var(--disp);border:1px solid var(--line);border-radius:3px;font-size:13px;color:var(--title);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;white-space:nowrap}
+.strip .cl{display:flex;height:124px;border-bottom:1px solid var(--line)}
+.sec{position:relative;padding:3px 6px}
+.sec .st{font-size:13px;font-weight:700;letter-spacing:1.5px;color:var(--ink);display:flex;align-items:center;gap:6px;height:18px}
+.sec .krow{display:flex;gap:6px;align-items:flex-start;justify-content:flex-start}
+.sec.c{width:172px;border-right:1px solid var(--line)}
+.sec.l{flex:1}
+.strip .dpart{flex:1;padding:4px 6px;position:relative}
+.dprow{display:flex;gap:6px}
+.dpcol{display:flex;flex-direction:column;gap:3px}
+.vbtn{height:20px;width:46px}
+.dpbot{display:flex;align-items:center;gap:4px;margin-top:4px}
+.dpbot .tgb{flex:none}
+/* page 2 */
+.p2top{height:34px;display:flex;align-items:center;gap:14px}
+.p2top .grp{display:flex;align-items:center;gap:6px}
+.p2top .cap{margin-right:4px}
+.p2g{display:grid;grid-template-columns:112px 1fr 112px;gap:8px;height:292px}
+.p2views{display:flex;align-items:center;gap:4px;height:30px;margin-top:4px}
+.p2views .tgb{height:24px;font-size:13px;padding:0 9px}
+.p2bot{display:grid;grid-template-columns:262px 1fr 292px;gap:8px;margin-top:4px;height:238px}
+.box{border:1px solid var(--line);border-radius:4px;background:var(--plate2);padding:4px 8px;position:relative;min-width:0}
+.box h4{margin:0 0 2px;font-size:13px;font-weight:700;letter-spacing:1.6px;color:var(--ink);text-transform:uppercase;white-space:nowrap}
+.envrow{display:flex;align-items:flex-end;gap:4px;justify-content:space-between}
+.eqcols{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+/* overlays */
+#modal{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:30}
+#modal[hidden]{display:none}
+.dlg{width:760px;max-height:640px;background:var(--plate);border:1px solid var(--selb);border-radius:8px;display:flex;flex-direction:column;box-shadow:0 10px 40px #000}
+.dlg h2{margin:0;padding:10px 16px;font-size:20px;letter-spacing:1px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;color:var(--title)}
+.dlg .dbody{padding:12px 16px;overflow:auto;font-size:15px;line-height:1.35;min-height:0}
+.dlg .dfoot{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.dlg label{display:flex;align-items:center;gap:8px;margin:6px 0}
+.dlg input[type=text],.dlg input:not([type]),.dlg select,.dlg textarea{background:var(--disp);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:5px 8px;font-size:15px}
+.dlg textarea{width:100%;height:230px;font-family:var(--font-num);font-size:12px}
+.dlg kbd{font-family:var(--font-num);font-size:12px;border:1px solid var(--line);border-radius:3px;padding:0 5px;background:var(--disp)}
+.dlg table{border-collapse:collapse;width:100%}
+.dlg td{padding:3px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.pb{display:grid;grid-template-columns:300px 1fr;gap:14px;height:380px}
+.pb .list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:4px;overflow:auto;background:var(--disp)}
+.pb .item{padding:5px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);font-size:15px}
+.pb .item.sel{background:var(--sel);color:#E1CBF4}
+.pb .item small{color:var(--dim);font-size:12px;letter-spacing:1px;text-transform:uppercase}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.chip{background:var(--disp);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:1px 9px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--sel);border-color:var(--selb);color:#E1CBF4}
+.warn{color:var(--r)}
+#tip{position:absolute;max-width:320px;background:#000;border:1px solid var(--selb);color:var(--ink);padding:6px 9px;border-radius:5px;font-size:14px;line-height:1.25;z-index:50;pointer-events:none}
+#tip[hidden]{display:none}
+#toast{position:absolute;left:50%;bottom:48px;transform:translateX(-50%);background:#000;border:1px solid var(--selb);padding:5px 14px;border-radius:5px;font-size:15px;z-index:60}
+#toast[hidden]{display:none}
+.rh{position:absolute;z-index:20;background:transparent}
+.rh.n{left:12px;right:12px;top:-4px;height:8px;cursor:ns-resize}.rh.s{left:12px;right:12px;bottom:-4px;height:8px;cursor:ns-resize}
+.rh.e{top:12px;bottom:12px;right:-4px;width:8px;cursor:ew-resize}.rh.w{top:12px;bottom:12px;left:-4px;width:8px;cursor:ew-resize}
+.rh.ne{right:-5px;top:-5px;width:14px;height:14px;cursor:nesw-resize}.rh.sw{left:-5px;bottom:-5px;width:14px;height:14px;cursor:nesw-resize}
+.rh.nw{left:-5px;top:-5px;width:14px;height:14px;cursor:nwse-resize}.rh.se{right:-5px;bottom:-5px;width:14px;height:14px;cursor:nwse-resize}
+.zoomrow{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--dim);flex-wrap:wrap;justify-content:center}
+.zoomrow .btn{padding:1px 8px}
+.aboutbtns{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.aboutbtns a{text-decoration:none;display:inline-block}
+.gcols{display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:14px;line-height:1.3}
+.gh{margin:0 0 4px;font-size:18px;color:var(--title);letter-spacing:1px}
+.gl{margin:0;padding-left:18px}.gl li{margin-bottom:6px}
+.dlg:has(.gcols){max-height:680px}
+.vt{color:#6fe3a6}.ou{color:var(--y)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.kb.h{display:grid;grid-template-columns:auto auto;grid-template-areas:"k l" "k v";column-gap:5px;align-items:center;justify-items:start}
+.kb.h .knob{grid-area:k}.kb.h .kl{grid-area:l;align-self:end}.kb.h .kv{grid-area:v;align-self:start;min-width:44px}
+
+</style>
+<div id="app" data-look="C">
+  <div id="frame">
+    <div id="stage">
+      <div class="cheek" id="cheekL" data-tip="Double-click the wood to reset the window to 100%."><canvas></canvas></div>
+      <div class="main">
+        <header class="hdr">
+          <div class="brand">
+            <svg width="32" height="32" viewBox="0 0 64 64" aria-label="Cat head logo"><path d="M8 6 L24 22 H40 L56 6 L60 36 Q60 58 32 60 Q4 58 4 36 Z" fill="#FF7BB1"/><path d="M12 14 L21 23 H14 Z M52 14 L43 23 H50 Z" fill="#FBBDD0"/><ellipse cx="22" cy="36" rx="4" ry="5" fill="#16171a"/><ellipse cx="42" cy="36" rx="4" ry="5" fill="#16171a"/><path d="M29 44 H35 L32 48 Z" fill="#16171a"/><path d="M32 48 Q28 53 24 50 M32 48 Q36 53 40 50" stroke="#16171a" stroke-width="2" fill="none"/><path d="M2 40 H14 M2 46 H14 M62 40 H50 M62 46 H50" stroke="#FBBDD0" stroke-width="1.6"/></svg>
+            <div style="display:flex;flex-direction:column;line-height:1"><span class="name" id="brandName"></span><span class="s87" id="brandSub"></span></div>
+          </div>
+          <div class="flip" id="flip" role="tablist" aria-label="Page">
+            <button id="pgA" role="tab" data-tip="Page 1: Multiband Compressor. Up to four bands, each with its own compressor, limiter and dynamic pattern. The small lamp shows if this page is processing sound. Press P to flip pages."><span class="pwr" id="pwA"></span>Compressor</button>
+            <button id="pgB" role="tab" data-tip="Page 2: Multiband Sidechain. Pumping and ducking for a low and a high band, triggered by audio, MIDI or the host beat. The small lamp shows if this page is processing sound. Press P to flip pages."><span class="pwr" id="pwB"></span>Sidechain</button>
+          </div>
+          <div class="sp"></div>
+          <div class="presetbar">
+            <button class="btn" id="pPrev" data-tip="Previous preset of this page.">&#9664;</button>
+            <button class="btn pname" id="pName" data-tip="Open the preset browser for this page. Double-click to rename your own presets.">Start Here</button>
+            <button class="btn" id="pNext" data-tip="Next preset of this page.">&#9654;</button>
+            <button class="btn" id="pSave" data-tip="Save these settings as your own preset. Asks before overwriting.">Save</button>
+          </div>
+          <div class="sp"></div>
+          <button class="btn" id="bBypass" aria-pressed="false" data-tip="Bypass (B): hear the dry signal, delayed to match, to compare with the processed sound. The meters keep moving.">Bypass</button>
+          <button class="btn" id="bGuide" data-tip="Short guide, what is verified and what is our own choice, and keyboard shortcuts.">Guide</button>
+          <button class="btn" id="bSettings" data-tip="Info bubbles, power saving, colour look.">Settings</button>
+          <button class="btn" id="bAbout" data-tip="About, support and where your files live.">About &amp; Support</button>
+        </header>
+        <div class="body" id="bodyArea">
+          <section class="page" id="page1"></section>
+          <section class="page" id="page2" hidden></section>
+          <section class="rig">
+            <button class="btn" id="rigPlay" data-tip="Start or stop the preview sound (Space). The meters and displays move even when it is stopped.">&#9654; Play</button>
+            <select id="rigSrc" aria-label="Preview source" data-tip="Test sound for the preview rig."><option value="mix">Full mix loop</option><option value="kb">Hardstyle kick + offbeat bass</option><option value="lead">Supersaw lead</option><option value="drums">Drum loop</option><option value="file">Your file</option></select>
+            <button class="btn" id="rigFile" data-tip="Load your own audio file for the preview. Nothing is uploaded; it is decoded in this page only.">Load file</button>
+            <input type="file" id="rigFileIn" accept="audio/*" hidden>
+            <label data-tip="Sidechain feed for page 2 in Audio mode. Kick track: a separate kick plays the trigger, as if a kick track was routed in. Same signal: the sound itself triggers the pumping.">Trigger feed <select id="rigFeed" aria-label="Sidechain feed"><option value="0">Kick track</option><option value="1">Same signal</option></select></label>
+            <span class="hint" data-tip="The preview rig plays loops at 150 BPM. Host Sync and the DPC patterns follow this transport.">Loop 150 BPM</span>
+            <div class="sp"></div>
+            <span class="hint" id="rigHint">B compares with the dry sound. P flips the page.</span>
+            <div class="tag">Preview rig, not part of the plugin</div>
+          </section>
+        </div>
+        <footer class="foot"><span id="footTxt"></span><span id="winsz">1280 &times; 720</span></footer>
+      </div>
+      <div class="cheek" id="cheekR" data-tip="Double-click the wood to reset the window to 100%."><canvas></canvas></div>
+      <div id="modal" hidden></div>
+      <div id="tip" hidden></div>
+      <div id="toast" hidden></div>
+    </div>
+    <div class="rh n" data-h="n"></div><div class="rh s" data-h="s"></div><div class="rh e" data-h="e"></div><div class="rh w" data-h="w"></div>
+    <div class="rh ne" data-h="ne"></div><div class="rh nw" data-h="nw"></div><div class="rh se" data-h="se"></div><div class="rh sw" data-h="sw"></div>
+  </div>
+  <div class="zoomrow"><button class="btn" id="zMinus" aria-label="Smaller">&minus;</button><button class="btn" id="zPct">100%</button><button class="btn" id="zPlus" aria-label="Larger">+</button><span>Drag any edge or corner to resize. Double-click the wood to reset.</span></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ============ DSP core (mockup version of the planned C++ core; same maths, same parameter ids) ============ */
+const D2L=db=>Math.pow(10,db*0.05), L2D=x=>20*Math.log10(Math.max(x,1e-9));
+function clamp(v,a,b){return Math.min(b,Math.max(a,v))}
+class Biq{constructor(){this.b0=1;this.b1=0;this.b2=0;this.a1=0;this.a2=0;this.z1=0;this.z2=0}
+ proc(x){const y=this.b0*x+this.z1;this.z1=this.b1*x-this.a1*y+this.z2;this.z2=this.b2*x-this.a2*y;return y}
+ reset(){this.z1=this.z2=0}
+ lp1(fs,f){const K=Math.tan(Math.PI*f/fs),n=1/(1+K);this.b0=K*n;this.b1=K*n;this.b2=0;this.a1=(K-1)*n;this.a2=0}
+ hp1(fs,f){const K=Math.tan(Math.PI*f/fs),n=1/(1+K);this.b0=n;this.b1=-n;this.b2=0;this.a1=(K-1)*n;this.a2=0}
+ lp(fs,f,q){const w=2*Math.PI*f/fs,c=Math.cos(w),al=Math.sin(w)/(2*q),a0=1+al;this.b0=(1-c)/2/a0;this.b1=(1-c)/a0;this.b2=this.b0;this.a1=-2*c/a0;this.a2=(1-al)/a0}
+ hp(fs,f,q){const w=2*Math.PI*f/fs,c=Math.cos(w),al=Math.sin(w)/(2*q),a0=1+al;this.b0=(1+c)/2/a0;this.b1=-(1+c)/a0;this.b2=this.b0;this.a1=-2*c/a0;this.a2=(1-al)/a0}
+ peak(fs,f,g,q){const A=Math.pow(10,g/40),w=2*Math.PI*f/fs,c=Math.cos(w),al=Math.sin(w)/(2*q),a0=1+al/A;this.b0=(1+al*A)/a0;this.b1=-2*c/a0;this.b2=(1-al*A)/a0;this.a1=-2*c/a0;this.a2=(1-al/A)/a0}
+ mag(fs,f){const w=2*Math.PI*f/fs,c1=Math.cos(w),s1=Math.sin(w),c2=Math.cos(2*w),s2=Math.sin(2*w);
+  const nr=this.b0+this.b1*c1+this.b2*c2,ni=-(this.b1*s1+this.b2*s2),dr=1+this.a1*c1+this.a2*c2,di=-(this.a1*s1+this.a2*s2);return Math.sqrt((nr*nr+ni*ni)/(dr*dr+di*di))}}
+/* Linkwitz-Riley crossover of order N (slope 6N dB/oct): two cascaded Butterworth of order N/2. N=1 (6 dB/oct) uses LP and x-LP. High branch is inverted when N/2 is odd so lo+hi is an all-pass. */
+const SLOPES=[6,12,24,36,48,60,72,84,96];
+class XO{constructor(){this.lo=0;this.hi=0;this.N=-1;this.lps=[];this.hps=[];this.inv=false}
+ shape(N){if(N===this.N)return;this.N=N;this.lps=[];this.hps=[];this.specs=[];this.inv=false;if(N===1){this.lps=[new Biq()];return}
+  const m=N/2;this.inv=(m%2===1);const one=[];if(m%2===1)one.push({o:1});for(let k=1;k<=Math.floor(m/2);k++)one.push({o:2,q:1/(2*Math.sin((2*k-1)*Math.PI/(2*m)))});
+  this.specs=one.concat(one);for(let i=0;i<this.specs.length;i++){this.lps.push(new Biq());this.hps.push(new Biq())}}
+ set(fs,fc,N){this.shape(N);fc=Math.min(fc,fs*0.45);if(N===1){this.lps[0].lp1(fs,fc);return}
+  this.specs.forEach((s,i)=>{if(s.o===1){this.lps[i].lp1(fs,fc);this.hps[i].hp1(fs,fc)}else{this.lps[i].lp(fs,fc,s.q);this.hps[i].hp(fs,fc,s.q)}})}
+ proc(x){if(this.N===1){const l=this.lps[0].proc(x);this.lo=l;this.hi=x-l;return}
+  let l=x,h=x;for(let i=0;i<this.lps.length;i++){l=this.lps[i].proc(l);h=this.hps[i].proc(h)}this.lo=l;this.hi=this.inv?-h:h}}
+/* Lookahead limiter: sliding minimum of the needed gain over the lookahead window, smoothed by a moving average of the same length (ceiling reached before the peak leaves the delay), then a one-pole release. */
+class LL{constructor(max){this.M=max+4;this.bl=new Float32Array(this.M);this.br=new Float32Array(this.M);this.w=0;this.la=0;this.dq=new Int32Array(this.M);this.dv=new Float32Array(this.M);this.h=0;this.t=0;this.n=0;this.avg=new Float32Array(this.M);this.sum=0;this.g=1;this.gr=0;this.ol=0;this.or=0;this.setLA(Math.round(max/2))}
+ setLA(la){la=Math.max(1,Math.min(this.M-4,la|0));if(la===this.la)return;this.la=la;this.bl.fill(0);this.br.fill(0);this.avg.fill(1);this.sum=la;this.h=this.t=0;this.n=0;this.g=1;this.w=0}
+ proc(l,r,ceil,kr,on){const M=this.M,la=this.la,w=this.w;this.bl[w]=l;this.br[w]=r;
+  const p=Math.max(Math.abs(l),Math.abs(r)),gt=on&&p>ceil?ceil/p:1;
+  /* monotonic deque of (index,value) */
+  const idx=this.n++;while(this.t>this.h&&this.dv[(this.t-1)%M]>=gt)this.t--;this.dq[this.t%M]=idx;this.dv[this.t%M]=gt;this.t++;
+  while(this.dq[this.h%M]<=idx-la)this.h++;const gm=this.dv[this.h%M];
+  const ai=idx%la;this.sum+=gm-this.avg[ai];this.avg[ai]=gm;
+  const ga=Math.min(1,this.sum/la);
+  this.g=ga<this.g?ga:this.g+(ga-this.g)*kr;
+  const rd=(w-(la-1)+M)%M;this.ol=this.bl[rd]*this.g;this.or=this.br[rd]*this.g;this.w=(w+1)%M;this.gr=-20*Math.log10(this.g+1e-9)}}
+class DL{constructor(max){this.M=max+2;this.b=new Float32Array(this.M);this.w=0}
+ proc(x,d){this.b[this.w]=x;const r=(this.w-d+this.M)%this.M;this.w=(this.w+1)%this.M;return this.b[r]}clear(){this.b.fill(0)}}
+/* FFT (radix 2, in place) */
+function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t}}
+ for(let len=2;len<=n;len<<=1){const a=-2*Math.PI/len,wr=Math.cos(a),wi=Math.sin(a);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let k=0;k<len/2;k++){const u=i+k,v=u+len/2,xr=re[v]*cr-im[v]*ci,xi=re[v]*ci+im[v]*cr;re[v]=re[u]-xr;im[v]=im[u]-xi;re[u]+=xr;im[u]+=xi;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t}}}}
+const FN=4096,FWIN=new Float32Array(FN);for(let i=0;i<FN;i++)FWIN[i]=.5-.5*Math.cos(2*Math.PI*i/FN);
+class Spec{constructor(){this.ring=new Float32Array(FN);this.w=0;this.re=new Float32Array(FN);this.im=new Float32Array(FN);this.db=new Float32Array(FN/2).fill(-120)}
+ push(x){this.ring[this.w]=x;this.w=(this.w+1)&(FN-1)}
+ update(fs){for(let i=0;i<FN;i++){this.re[i]=this.ring[(this.w+i)&(FN-1)]*FWIN[i];this.im[i]=0}fft(this.re,this.im);
+  for(let k=0;k<FN/2;k++){const m=Math.sqrt(this.re[k]*this.re[k]+this.im[k]*this.im[k])/(FN*.25);const d=20*Math.log10(m+1e-9);this.db[k]=d>this.db[k]?d:this.db[k]*.82+d*.18}}}
+/* ============ Parameter scaling helpers used by the engine ============ */
+const ratioOf=u=>u>=0.998?Infinity:1/(1-u);
+const RSTEPS=[1,1.5,2,3,4,6,8,10,20,Infinity];
+function snapRatio(u){const r=ratioOf(u);if(!isFinite(r)||r>20.5)return 1;return 1-1/Math.max(1,Math.round(r))}   /* integer ratios only, infinity above 20 */
+function grCurve(over,R,knee,w){ /* gain reduction in dB for a level over threshold */
+ const s=isFinite(R)?1/R:0;if(knee){if(2*over<-w)return 0;if(2*Math.abs(over)<=w){const u=over+w/2;return (1-s)*u*u/(2*w)}}return over>0?over*(1-s):0}
+const BPM=150,SPB=60/BPM;
+/* ============ Engine ============ */
+const NB=4;
+class Engine{
+ constructor(){this.fs=48000;this.sysLA=7.5;this.eco=false;this.rms=false;this.autoGain=false;this.ratioSteps=false;
+  this.tpos=0;this.page=[true,false];this.bypass=false;this.feedKind=0;this.trigKind=0;
+  this.sp={in:new Spec(),pre:new Spec(),post:new Spec(),feed:new Spec()};this.specOn=true;
+  this.pre={pk:0,rms:0,l:0,r:0,rl:0,rr:0};this.post={pk:0,rms:0,l:0,r:0,rl:0,rr:0};this.scIn={pk:0},this.scOut={pk:0};
+  this.prepare(48000)}
+ prepare(fs){this.fs=fs;const maxLA=Math.ceil(0.0075*fs)+2;this.maxLA=maxLA;
+  this.xo=[];for(let c=0;c<NB-1;c++)this.xo.push([new XO(),new XO()]);
+  this.ap=[];for(let b=0;b<NB;b++){this.ap.push([]);for(let j=0;j<Math.max(0,b-1);j++)this.ap[b].push([new XO(),new XO()])}
+  this.bandLL=[];this.bandDry=[];this.bandL=[];this.bandR=[];for(let b=0;b<NB;b++){this.bandLL.push(new LL(maxLA));this.bandDry.push([new DL(maxLA),new DL(maxLA)])}
+  this.mLL=new LL(maxLA);this.dryTot=[new DL(2*maxLA+8),new DL(2*maxLA+8)];this.mixDry=[new DL(maxLA),new DL(maxLA)];
+  this.bs=[];for(let b=0;b<NB;b++)this.bs.push({env:0,pw:0,cur:0,gr:0,lgr:0,inDb:-90,outPk:0,inPk:0,dpcG:1,dpcPh:0,lvl:-90,scI:new Float32Array(480),scO:new Float32Array(480),scG:new Float32Array(480),sc:0,aI:0,aO:0,aG:0,aN:0});
+  this.colN=Math.round(fs*0.006);this.grHist=[0,1,2,3].map(()=>new Float32Array(360));this.ghN=0;
+  this.pkSm=0;this.gI=1;this.gO=1;
+  /* sidechain */
+  this.scEq=[[new Biq(),new Biq()],[new Biq(),new Biq()]];this.scXo=[new XO(),new XO()];this.scEnvF=0;this.scArm=false;this.scLast=-1e9;this.scT=[1e9,1e9];this.scG=[1,1];this.scLastTrig=-1;this.scGain=[1,1];
+  this.scEv=[];this.scIdx=0;
+  this.setSys(this.sysLA);this.setMBC(DEFMBC());this.setSC(DEFSC())}
+ setSys(la){this.sysLA=la;const n=Math.max(1,Math.round(la*0.001*this.fs));this.LA=n;this.bandLL.forEach(l=>l.setLA(n));this.mLL.setLA(n);this.lat=2*(n-1)}
+ /* ---- Multiband compressor parameters (called from syncUI) ---- */
+ setMBC(m){this.m=m;const fs=this.fs;let N=SLOPES[m.slope]/6;if(this.eco)N=Math.min(N,8);this.N=N;this.nb=m.bands;
+  for(let c=0;c<this.nb-1;c++)for(let ch=0;ch<2;ch++)this.xo[c][ch].set(fs,m.x[c],N);
+  for(let b=2;b<this.nb;b++)for(let j=0;j<b-1;j++)for(let ch=0;ch<2;ch++)this.ap[b][j][ch].set(fs,m.x[j],N);
+  const mk=(ms)=>1-Math.exp(-1/(Math.max(0.02,ms)*0.001*fs));
+  this.bp=m.b.map((b,i)=>{const R=this.ratioSteps?ratioOf(snapRatio(b.u)):ratioOf(b.u);
+   const auto=b.rel<1;let mk2=this.autoGain?Math.min(24,Math.abs(Math.min(0,b.thr))*(isFinite(R)?(1-1/R):1)*0.5):0;
+   return{on:b.on,cOn:b.cOn,thr:b.thr,R,knee:b.knee,aA:mk(b.atk),rel:b.rel,auto,aR:mk(auto?150:b.rel),boost:D2L(b.boost+mk2),lOn:b.lOn,lRel:1-Math.exp(-1/(Math.max(1,b.lRel)*0.001*fs)),lAuto:b.lRel<1,ceil:D2L(b.lOut),inG:D2L(b.inG),outG:D2L(b.outG),mix:b.mix/100,mute:b.mute,solo:b.solo,
+    dOn:b.dOn,dStr:b.dStr/100,dX2:b.dX2,dFlip:b.dFlip,dPre:b.dPre,pat:b.pat}});
+  this.anySolo=this.bp.some((b,i)=>i<this.nb&&b.solo);
+  this.mMix=m.mix/100;this.mCeil=D2L(m.lim.ceil);this.mLimOn=m.lim.on;this.mKr=1-Math.exp(-1/(0.08*fs));
+  this.gIn=D2L(m.inG);this.gOut=D2L(m.outG);this.gPost=D2L(m.postG||0);const pan=(p)=>{const a=(p+1)*Math.PI/4;return[Math.cos(a)*Math.SQRT2,Math.sin(a)*Math.SQRT2]};
+  this.pIn=pan(m.inPan);this.pOut=pan(m.outPan);this.kdet=1-Math.exp(-1/(0.0015*fs));this.krms=1-Math.exp(-1/(0.003*fs));
+  this.page[0]=m.on;this.dpcLut=m.b.map(b=>b.lut)}
+ /* ---- Sidechain parameters ---- */
+ setSC(s){this.s=s;const fs=this.fs;this.page[1]=s.on;this.scInG=D2L(s.inG);this.scOutG=D2L(s.outG);this.trigKind=s.trig;
+  const mkE=(ft,i,f,g,q)=>{const a=this.scEq[i][0],b=this.scEq[i][1];
+   if(ft===1){const gg=-Math.max(6,Math.abs(g))*1.5;a.peak(fs,f,gg,Math.max(q,2));b.peak(fs,f,0,1)}else if(ft===2){a.peak(fs,f,g,q);b.peak(fs,f,g,q)}else{a.peak(fs,f,g,q);b.peak(fs,f,0,1)}};
+  mkE(s.ftype,0,s.e1f,s.e1g,s.e1w);mkE(s.ftype,1,s.e2f,s.e2g,s.e2w);
+  this.scXo[0].set(fs,s.split,4);this.scXo[1].set(fs,s.split,4);
+  this.scThr=-6-(s.sens/100)*54; this.lowVol=D2L(s.lowVol);this.hiVol=D2L(s.hiVol);
+  const per=[0.25,0.5,1,2][s.grid]*SPB;this.scPer=per*fs;this.scOff=s.offset;
+  this.env=[{str:s.lStr/100,atk:s.lAtk*0.001*fs,hold:s.lHold*0.001*fs,rel:s.lRel*0.001*fs,ac:s.lAtkC,rc:s.lRelC},{str:s.hStr/100,atk:s.hAtk*0.001*fs,hold:s.hHold*0.001*fs,rel:s.hRel*0.001*fs,ac:s.hAtkC,rc:s.hRelC}]}
+ /* envelope shape: t in samples since trigger -> gain (linear). Same function is drawn in the editor. */
+ static envGain(e,t){let k=0;const cf=(x,c)=>Math.pow(clamp(x,0,1),Math.pow(2,-c/33));
+  if(t<0)return 1;if(e.atk>0&&t<e.atk)k=cf(t/e.atk,e.ac);else if(t<e.atk+e.hold)k=1;else if(e.rel>0&&t<e.atk+e.hold+e.rel)k=1-cf((t-e.atk-e.hold)/e.rel,e.rc);else if(e.atk+e.hold+e.rel<=0)k=0;else k=0;
+  return 1-e.str*k}
+ /* ---- process one block, in place ---- */
+ process(L,R,n,src){const m=this.m,fs=this.fs,nb=this.nb;
+  const d0=this.dryTot;let preP=0,postP=0;
+  const bypass=this.bypass;let pl=0,pr=0,ql=0,qr=0;
+  for(let i=0;i<n;i++){let xl=L[i],xr=R[i];
+   const tp=this.tpos+i; /* transport sample */
+   this.sp.in.push((xl+xr)*.5);
+   const dl=d0[0].proc(xl,this.lat),dr=d0[1].proc(xr,this.lat);
+   let ol=xl,orr=xr,preDbPk=Math.max(Math.abs(xl),Math.abs(xr));
+   /* ---------- page 1: multiband compressor ---------- */
+   if(this.page[0]){
+    xl*=this.gIn*this.pIn[0];xr*=this.gIn*this.pIn[1];
+    const bl=this.bandL,br=this.bandR;
+    if(nb===1){bl[0]=xl;br[0]=xr}else{let sl=xl,sr=xr;
+     for(let c=nb-2;c>=0;c--){const a=this.xo[c][0],b=this.xo[c][1];a.proc(sl);b.proc(sr);let hl=a.hi,hr=b.hi;
+      for(let j=0;j<c;j++){const pa=this.ap[c+1][j][0],pb=this.ap[c+1][j][1];pa.proc(hl);pb.proc(hr);hl=pa.lo+pa.hi;hr=pb.lo+pb.hi}
+      bl[c+1]=hl;br[c+1]=hr;sl=a.lo;sr=b.lo}
+     bl[0]=sl;br[0]=sr}
+    let wl=0,wr=0,dryl=0,dryr=0;
+    for(let b=0;b<nb;b++){const p=this.bp[b],S=this.bs[b];let l=bl[b]*p.inG,r=br[b]*p.inG;
+     const dBl=this.bandDry[b][0].proc(l,this.LA-1),dBr=this.bandDry[b][1].proc(r,this.LA-1);
+     let al=l,ar=r,gdb=0;
+     const lv=Math.max(Math.abs(l),Math.abs(r));
+     if(p.on){
+      if(p.cOn){let det;if(this.rms){S.pw+=(lv*lv-S.pw)*this.krms;det=Math.sqrt(S.pw)}else{S.env=lv>S.env?lv:lv+(S.env-lv)*(1-this.kdet);det=S.env}
+       const ldb=20*Math.log10(det+1e-9);S.lvl=ldb;const tg=Math.min(60,grCurve(ldb-p.thr,p.R,p.knee,6));
+       let k;if(tg>S.cur)k=p.aA;else k=p.auto?1-Math.exp(-1/((30+8*Math.max(S.cur,0)) *0.001*fs)):p.aR;S.cur+=(tg-S.cur)*k;gdb=S.cur}
+      else{S.lvl=20*Math.log10(lv+1e-9);S.cur+=(0-S.cur)*0.01}
+      let g=Math.exp(-gdb*0.1151293)*(p.cOn?p.boost:1);
+      /* dynamic pattern compressor: gain from the pattern, position follows the transport (4 beats, x2 doubles the speed) */
+      let dg=1;if(p.dOn){const beat=tp/(SPB*fs),cyc=p.dX2?2:4,ph=((beat/cyc)%1+1)%1;let y=this.dpcLut[b][(ph*512)|0];if(p.dFlip)y=1-y;const dd=-(1-y)*24*p.dStr;dg=Math.exp(dd*0.1151293);
+       S.dpcG+=(dg-S.dpcG)*0.02;dg=S.dpcG}
+      if(p.dOn&&p.dPre)g*=dg;
+      al=l*g;ar=r*g;
+      const LLb=this.bandLL[b];LLb.proc(al,ar,p.ceil,p.lAuto?1-Math.exp(-1/((40+12*Math.min(S.lgr,20))*0.001*fs)):p.lRel,p.lOn);al=LLb.ol;ar=LLb.or;S.lgr=p.lOn?LLb.gr:0;
+      if(p.dOn&&!p.dPre){al*=dg;ar*=dg}
+      S.gr=gdb}
+     else{const LLb=this.bandLL[b];LLb.proc(al,ar,1e9,1,false);al=LLb.ol;ar=LLb.or;S.cur+=(0-S.cur)*0.01;S.lgr=0;S.gr=0;S.lvl=20*Math.log10(lv+1e-9)}
+     al=dBl*(1-p.mix)+al*p.mix;ar=dBr*(1-p.mix)+ar*p.mix;
+     al*=p.outG;ar*=p.outG;
+     const audible=!p.mute&&(!this.anySolo||p.solo);
+     S.aI=Math.max(S.aI,lv);const oo=audible?Math.max(Math.abs(al),Math.abs(ar)):0;S.aO=Math.max(S.aO,oo);S.aG=Math.max(S.aG,S.cur);
+     if(++S.aN>=this.colN){S.scI[S.sc]=S.aI;S.scO[S.sc]=S.aO;S.scG[S.sc]=S.aG;S.sc=(S.sc+1)%480;S.aI=S.aO=S.aG=0;S.aN=0}
+     if(audible){wl+=al;wr+=ar;dryl+=dBl*p.outG;dryr+=dBr*p.outG}}
+    /* main Mix: dry bands (aligned) against wet bands */
+    ol=dryl*(1-this.mMix)+wl*this.mMix;orr=dryr*(1-this.mMix)+wr*this.mMix;
+    ol*=this.gOut;orr*=this.gOut;
+    const M=this.mLL;M.proc(ol,orr,this.mCeil,this.mKr,this.mLimOn);ol=M.ol*this.gPost;orr=M.or*this.gPost;this.mGr=this.mLimOn?M.gr:0;
+   }
+   if(this.page[0]||true){this.sp.pre.push((xl+xr)*.5);this.sp.post.push((ol+orr)*.5)}
+   /* ---------- page 2: multiband sidechain ---------- */
+   const feedL=src?src.fl[i]:0,feedR=src?src.fr[i]:0;
+   const sg=this.scInG;let fs0=(this.s.feed===0?(feedL+feedR)*.5:(ol+orr)*.5)*sg;this.sp.feed.push(fs0);
+   this.sI=Math.max(this.sI||0,Math.abs(ol)*sg);this.sIr=Math.max(this.sIr||0,Math.abs(orr)*sg);
+   if(!this.page[1]){this.sO=Math.max(this.sO||0,Math.abs(ol)*sg);this.sOr=Math.max(this.sOr||0,Math.abs(orr)*sg)}
+   if(this.page[1]){
+    let u=fs0;u=this.scEq[0][0].proc(u);u=this.scEq[0][1].proc(u);u=this.scEq[1][0].proc(u);u=this.scEq[1][1].proc(u);
+    this.scU=u;const au=Math.abs(u);
+    let trig=false;const s=this.s;
+    if(s.trig===0){this.scEnvF=au>this.scEnvF?au:au+(this.scEnvF-au)*0.9995;const ldb=20*Math.log10(this.scEnvF+1e-9);
+     if(!this.scArm&&ldb>this.scThr&&tp-this.scLast>0.03*fs){this.scArm=true;trig=true}else if(this.scArm&&ldb<this.scThr-6)this.scArm=false}
+    else if(s.trig===1){const ev=src?src.ev:null;if(ev){const ln=src.loopN;const p0=tp%ln;if(this.scPrev===undefined)this.scPrev=p0;
+      for(let q=0;q<ev.length;q++){const e=ev[q];if((this.scPrev<e&&p0>=e)||(p0<this.scPrev&&(e>this.scPrev||e<=p0))){trig=true;break}}this.scPrev=p0}}
+    else{const ph=tp/this.scPer-this.scOff,pc=Math.floor(ph);if(this.scPh===undefined)this.scPh=pc;if(pc!==this.scPh){this.scPh=pc;trig=true}}
+    if(trig){this.scLast=tp;this.scT[0]=this.scT[1]=0;this.scTrigFlash=1}
+    const gl=Engine.envGain(this.env[0],this.scT[0]),gh=Engine.envGain(this.env[1],this.scT[1]);this.scT[0]++;this.scT[1]++;
+    this.scGain[0]+=(gl-this.scGain[0])*0.12;this.scGain[1]+=(gh-this.scGain[1])*0.12;
+    this.scXo[0].proc(ol*sg);this.scXo[1].proc(orr*sg);
+    const lo0=this.scXo[0].lo,hi0=this.scXo[0].hi,lo1=this.scXo[1].lo,hi1=this.scXo[1].hi;
+    let a0=lo0*this.scGain[0]*this.lowVol,a1=lo1*this.scGain[0]*this.lowVol,b0=hi0*this.scGain[1]*this.hiVol,b1=hi1*this.scGain[1]*this.hiVol;
+    if(s.listen===1){b0=b1=0}else if(s.listen===2){a0=a1=0}
+    ol=(a0+b0)*this.scOutG;orr=(a1+b1)*this.scOutG;
+    this.sO=Math.max(this.sO||0,Math.abs(a0+b0));this.sOr=Math.max(this.sOr||0,Math.abs(a1+b1)*this.scOutG);}
+   if(bypass){ol=dl;orr=dr}
+   if(!isFinite(ol)||!isFinite(orr)){ol=orr=0;this.reset()}
+   L[i]=ol;R[i]=orr;postP=Math.max(postP,Math.abs(ol),Math.abs(orr));preP=Math.max(preP,preDbPk);
+   this.pre.rms+=((xl*xl+xr*xr)*.5-this.pre.rms)*0.00015;this.post.rms+=((ol*ol+orr*orr)*.5-this.post.rms)*0.00015;this.pre.rl+=(xl*xl-this.pre.rl)*0.00015;this.pre.rr+=(xr*xr-this.pre.rr)*0.00015;this.post.rl+=(ol*ol-this.post.rl)*0.00015;this.post.rr+=(orr*orr-this.post.rr)*0.00015;pl=Math.max(pl,Math.abs(xl));pr=Math.max(pr,Math.abs(xr));ql=Math.max(ql,Math.abs(ol));qr=Math.max(qr,Math.abs(orr))}
+  this.tpos+=n;const dec=Math.pow(.9,n/512);this.sInL=Math.max(this.sI||0,(this.sInL||0)*dec);this.sInR=Math.max(this.sIr||0,(this.sInR||0)*dec);this.sOutL=Math.max((this.sO||0)*(this.page[1]?this.scOutG:1),(this.sOutL||0)*dec);this.sOutR=Math.max(this.sOr||0,(this.sOutR||0)*dec);this.sI=this.sIr=this.sO=this.sOr=0;this.scTrigFlash=(this.scTrigFlash||0)*Math.pow(.9,n/512);this.pre.l=Math.max(pl,this.pre.l*dec);this.pre.r=Math.max(pr,this.pre.r*dec);this.post.l=Math.max(ql,this.post.l*dec);this.post.r=Math.max(qr,this.post.r*dec);this.pre.pk=Math.max(preP,this.pre.pk*dec);this.post.pk=Math.max(postP,this.post.pk*dec);
+  this.ghAcc=(this.ghAcc||0)+n;if(this.ghAcc>=fs/60){this.ghAcc=0;for(let b=0;b<NB;b++){this.grHist[b][this.ghN]=this.bs[b].cur}this.ghN=(this.ghN+1)%360}}
+ reset(){this.xo.forEach(a=>a.forEach(x=>{x.lps.forEach(f=>f.reset());x.hps.forEach(f=>f.reset())}));this.ap.forEach(a=>a.forEach(p=>p.forEach(x=>{x.lps.forEach(f=>f.reset());x.hps.forEach(f=>f.reset())})));this.bs.forEach(s=>{s.env=s.pw=s.cur=0})}
+}
+const DEFMBC=()=>({bands:4,slope:3,x:[110,500,5000],mix:50,inG:0,inPan:0,outG:0,outPan:0,lim:{on:true,ceil:-0.3},on:true,slopeIdx:3,
+ b:[0,1,2,3].map(()=>({on:true,cOn:true,thr:-18,u:.5,knee:1,atk:20,rel:150,boost:0,lOn:true,lRel:50,lOut:0,inG:0,outG:0,mix:100,mute:false,solo:false,dOn:false,dStr:50,dX2:false,dFlip:false,dPre:true,pat:[],lut:new Float32Array(513).fill(1)}))});
+const DEFSC=()=>({on:false,trig:2,sens:59,ftype:0,inG:0,outG:0,split:1050,listen:0,lowVol:0,hiVol:0,lStr:92,lAtk:0,lAtkC:0,lHold:4,lRel:600,lRelC:33,hStr:52,hAtk:0,hAtkC:0,hHold:20,hRel:300,hRelC:33,
+ e1f:200,e1g:0,e1w:1,e2f:4000,e2g:0,e2w:1,grid:2,offset:0,feed:0});
+
+
+/* ============ Product name: the only place the working name lives (the user will rename it) ============ */
+const NAME='MultiPaw Compressor', VERSION='1.0';   /* the only place the product name lives */
+const REPO='SpeakingColors/multipawcompressor';
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!==undefined)e.innerHTML=h;return e};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY=NAME.toLowerCase().replace(/[^a-z0-9]/g,'');
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,1600)}
+const app=$('#app'),stage=$('#stage'),frame=$('#frame');
+function hd(cv,w,h,border){const b=border?2:0;cv.width=w*2;cv.height=h*2;cv.style.width=(w+b)+'px';cv.style.height=(h+b)+'px';const g=cv.getContext('2d');g.scale(2,2);return g}
+/* ============ Parameters (every one is an automatable parameter in the real plugin) ============ */
+const PS={},st={},DEF={};
+function P(id,pg,min,max,def,o){PS[id]=Object.assign({id,pg,min,max,def},o||{});DEF[id]=def;st[id]=def}
+P('m.on',0,0,1,1,{int:1});P('m.bands',0,1,4,4,{int:1});P('m.slope',0,0,8,3,{int:1});
+P('m.x1',0,20,20000,110,{log:1});P('m.x2',0,20,20000,500,{log:1});P('m.x3',0,20,20000,5000,{log:1});
+P('m.mix',0,0,100,50);P('m.inG',0,-24,24,0);P('m.inPan',0,-100,100,0);P('m.outG',0,-24,24,0);P('m.postG',0,-12,12,0);P('m.outPan',0,-100,100,0);
+P('m.limOn',0,0,1,1,{int:1});P('m.ceil',0,-12,0,-0.3);P('m.fft',0,0,3,1,{int:1});P('m.vu',0,0,1,0,{int:1});
+for(let i=0;i<4;i++){const b='b'+i+'.';
+ P(b+'on',0,0,1,1,{int:1});P(b+'mix',0,0,100,100);P(b+'thr',0,-48,0,-18);P(b+'cOn',0,0,1,1,{int:1});P(b+'rat',0,0,1,.5);P(b+'knee',0,0,1,1,{int:1});
+ P(b+'atk',0,0.1,100,20,{log:1});P(b+'rel',0,0.5,1000,150,{log:1});P(b+'boost',0,0,24,0);P(b+'lOn',0,0,1,1,{int:1});P(b+'lRel',0,0.5,1000,50,{log:1});P(b+'lOut',0,-12,0,0);
+ P(b+'mute',0,0,1,0,{int:1});P(b+'solo',0,0,1,0,{int:1});P(b+'view',0,0,2,0,{int:1});P(b+'zoom',0,0,1,.4);
+ P(b+'dOn',0,0,1,0,{int:1});P(b+'dStr',0,0,100,50);P(b+'dGrid',0,0,2,0,{int:1});P(b+'dX2',0,0,1,0,{int:1});P(b+'dPre',0,0,1,1,{int:1});P(b+'dFlip',0,0,1,0,{int:1});
+ P(b+'inG',0,-24,8,0);P(b+'outG',0,-24,8,0);P(b+'sel',0,-1,20,-1,{int:1});P(b+'patI',0,0,9,0,{int:1})}
+P('s.on',1,0,1,0,{int:1});P('s.trig',1,0,2,2,{int:1});P('s.sens',1,0,100,59);P('s.ftype',1,0,2,0,{int:1});P('s.inG',1,-24,24,0);P('s.outG',1,-24,24,0);
+P('s.split',1,50,8000,1050,{log:1});P('s.listen',1,0,2,0,{int:1});P('s.lowVol',1,-24,6,0);P('s.hiVol',1,-24,6,0);
+['l','h'].forEach((k,i)=>{P('s.'+k+'Str',1,0,100,i?52:92);P('s.'+k+'Atk',1,0,200,0);P('s.'+k+'AtkC',1,-100,100,0);P('s.'+k+'Hold',1,0,2000,i?20:4);P('s.'+k+'Rel',1,1,4000,i?300:600,{log:1});P('s.'+k+'RelC',1,-100,100,33)});
+P('s.link',1,0,1,0,{int:1});P('s.e1f',1,20,20000,200,{log:1});P('s.e1g',1,-18,18,0);P('s.e1w',1,0.2,12,1,{log:1});P('s.e2f',1,20,20000,4000,{log:1});P('s.e2g',1,-18,18,0);P('s.e2w',1,0.2,12,1,{log:1});
+P('s.view',1,0,8,0,{int:1});P('s.grid',1,0,3,2,{int:1});P('s.offset',1,0,1,0);P('s.span',1,0,3,0,{int:1});
+const pats=[[],[],[],[]];                 /* DPC pattern nodes per band: [[x 0..1 of the cycle, y 0..1 (1 = untouched)], ...] */
+const sys={eco:false,la:7.5,ro:true,auto:false,steps:false,rms:false};
+const settings={tips:true,power:false,look:'C'};try{Object.assign(settings,JSON.parse(localStorage.getItem(KEY+'-settings')||'{}'));if(settings.sys)Object.assign(sys,settings.sys)}catch(e){}
+const posOf=(id,v)=>{const p=PS[id];return p.log?Math.log(v/p.min)/Math.log(p.max/p.min):(v-p.min)/(p.max-p.min)};
+const valOf=(id,t)=>{const p=PS[id];t=clamp(t,0,1);let v=p.log?p.min*Math.pow(p.max/p.min,t):p.min+t*(p.max-p.min);return p.int?Math.round(v):v};
+/* ============ Formatting ============ */
+const fHz=v=>v>=1000?(v/1000).toFixed(v>=10000?1:2).replace(/\.?0+$/,'')+' kHz':(v>=100?Math.round(v):v.toFixed(1).replace(/\.0$/,''))+' Hz';
+const fDb=(v,d=1)=>(v>0.049?'+':'')+v.toFixed(d)+' dB';
+const fMs=ms=>ms>=1000?(ms/1000).toFixed(2)+' s':ms>=100?Math.round(ms)+' ms':ms>=10?ms.toFixed(1)+' ms':ms.toFixed(2)+' ms';
+const fRat=u=>{const r=ratioOf(sys.steps?snapRatio(u):u);return !isFinite(r)?'1 : inf':'1 : '+(r>=10?r.toFixed(1):r.toFixed(2))};
+const fPct=v=>v.toFixed(0)+'%';
+/* ============ Controls ============ */
+const ctls=[];let onChange=()=>{};
+function setP(id,v,user){const p=PS[id];v=clamp(v,p.min,p.max);if(p.int)v=Math.round(v);if(st[id]===v)return;st[id]=v;if(user!==false)onChange(id)}
+function arc(cx,cy,r,a0,a1){const p=a=>[cx+r*Math.sin(a*Math.PI/180),cy-r*Math.cos(a*Math.PI/180)],[x0,y0]=p(a0),[x1,y1]=p(a1);return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${Math.abs(a1-a0)>180?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`}
+let kuid=0;
+function knob(parent,o){ /* o: id,label,size,tip,fmt,color,cls */
+ const sz=o.size||34,p=PS[o.id],u=++kuid;const w=el('div','kb'+(o.cls?' '+o.cls:''));w.dataset.tip=o.tip||'';if(o.style)Object.assign(w.style,o.style);
+ const kv=el('div','kv'),kn=el('div','knob');kn.style.width=kn.style.height=sz+'px';kn.tabIndex=0;kn.setAttribute('role','slider');kn.setAttribute('aria-label',o.label);
+ kn.innerHTML=`<svg viewBox="0 0 100 100" width="${sz}" height="${sz}"><defs><radialGradient id="kg${u}" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f1f1f4"/><stop offset=".55" stop-color="#b9bac2"/><stop offset="1" stop-color="#6e6f78"/></radialGradient></defs><path d="${arc(50,50,43,-135,135)}" fill="none" stroke="#2a2c33" stroke-width="7" stroke-linecap="round"/><path class="va" d="" fill="none" stroke="${o.color||'var(--accent)'}" stroke-width="7" stroke-linecap="round"/><g class="body"><circle cx="50" cy="50" r="31" fill="url(#kg${u})" stroke="#4a4b53" stroke-width="2"/></g><g class="rot"><line x1="50" y1="50" x2="50" y2="26" stroke="#16171a" stroke-width="7" stroke-linecap="round"/></g></svg>`;
+ const kl=el('div','kl',o.label);w.appendChild(kv);w.appendChild(kn);w.appendChild(kl);parent.appendChild(w);
+ const va=kn.querySelector('.va'),rot=kn.querySelector('.rot');
+ const c={refresh(){const t=posOf(o.id,st[o.id]),a=-135+270*t;rot.setAttribute('transform','rotate('+a+' 50 50)');
+   const bip=p.min<0&&p.max>0&&!p.log,t0=bip?posOf(o.id,0):0,a0=-135+270*t0;va.setAttribute('d',Math.abs(a-a0)<.5?'':arc(50,50,43,Math.min(a0,a),Math.max(a0,a)));
+   kv.textContent=o.fmt?o.fmt(st[o.id]):String(st[o.id]);kn.setAttribute('aria-valuenow',st[o.id].toFixed(2))}};ctls.push(c);
+ const dflt=o.def!==undefined?o.def:p.def;
+ let drag=null;kn.addEventListener('pointerdown',e=>{kn.setPointerCapture(e.pointerId);drag={y:e.clientY,t:posOf(o.id,st[o.id])};e.preventDefault()});
+ kn.addEventListener('pointermove',e=>{if(!drag)return;const d=-(e.clientY-drag.y)/curScale();setP(o.id,valOf(o.id,drag.t+d/(e.shiftKey?1500:170)),true)});
+ kn.addEventListener('pointerup',()=>drag=null);kn.addEventListener('pointercancel',()=>drag=null);
+ kn.addEventListener('dblclick',()=>setP(o.id,dflt,true));
+ kn.addEventListener('wheel',e=>{e.preventDefault();const dt=(e.deltaY<0?1:-1)*(e.shiftKey?.002:.02);setP(o.id,p.int?st[o.id]+(e.deltaY<0?1:-1):valOf(o.id,posOf(o.id,st[o.id])+dt),true)},{passive:false});
+ kn.addEventListener('keydown',e=>{const s=e.shiftKey?.002:.01;const k=e.key;if(k==='ArrowUp'||k==='ArrowRight'){setP(o.id,valOf(o.id,posOf(o.id,st[o.id])+s),true);e.preventDefault()}else if(k==='ArrowDown'||k==='ArrowLeft'){setP(o.id,valOf(o.id,posOf(o.id,st[o.id])-s),true);e.preventDefault()}else if(k==='Home'){setP(o.id,p.min,true)}else if(k==='End'){setP(o.id,p.max,true)}});
+ return w}
+function toggle(parent,id,txt,tip,cls){const b=el('button','tgb'+(cls?' '+cls:''),txt);b.dataset.tip=tip;b.setAttribute('aria-pressed','false');b.onclick=()=>setP(id,st[id]?0:1,true);parent.appendChild(b);ctls.push({refresh(){b.classList.toggle('on',!!st[id]);b.setAttribute('aria-pressed',st[id]?'true':'false')}});return b}
+function powerBtn(parent,id,tip,cls){const b=el('button','pw'+(cls?' '+cls:''));b.dataset.tip=tip;b.setAttribute('aria-label',tip.slice(0,30));b.onclick=()=>setP(id,st[id]?0:1,true);parent.appendChild(b);ctls.push({refresh(){b.classList.toggle('on',!!st[id])}});return b}
+function radios(parent,id,items,tips){const out=[];items.forEach((t,i)=>{const b=el('button','rad','<span class="lp"></span>'+t);b.dataset.tip=tips[i];b.onclick=()=>setP(id,i,true);parent.appendChild(b);out.push(b)});ctls.push({refresh(){out.forEach((b,i)=>b.classList.toggle('on',st[id]===i))}})}
+function seg(parent,id,items,tips,cls){const d=el('div','seg');items.forEach((t,i)=>{const b=el('button','',t);b.dataset.tip=tips[i];b.onclick=()=>setP(id,i,true);d.appendChild(b)});parent.appendChild(d);ctls.push({refresh(){d.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',st[id]===i))}});return d}
+function selectBox(parent,id,items,tip,cls,off){off=off||0;const s=el('select',cls||'sel');items.forEach((t,i)=>{const o=el('option','',t);o.value=i;s.appendChild(o)});s.dataset.tip=tip;s.setAttribute('aria-label',tip.slice(0,30));s.onchange=()=>setP(id,+s.value+off,true);parent.appendChild(s);ctls.push({refresh(){s.value=st[id]-off}});return s}
+/* ============ Theme tokens for canvases ============ */
+function tokens(){const c=getComputedStyle(app);const g=n=>c.getPropertyValue(n).trim();return{disp:g('--disp'),line:g('--line'),dim:g('--dim'),acc:g('--accent'),ink:g('--ink'),title:g('--title'),pink:'#FF7BB1',bc:[g('--b0'),g('--b1'),g('--b2'),g('--b3')]}}
+let T=null;
+const BC=['#6CC9F5','#02EBBA','#FFD100','#FF7BB1'];
+const hex2rgba=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`};
+/* log frequency axis helpers */
+const fx=(f,x0,w,f0=20,f1=20000)=>x0+Math.log(f/f0)/Math.log(f1/f0)*w;
+const xf=(x,x0,w,f0=20,f1=20000)=>f0*Math.pow(f1/f0,(x-x0)/w);
+function meterColor(g,y0,y1,mn,mx,fn){const grad=g.createLinearGradient(0,y0,0,y1);const f=d=>clamp((d-mn)/(mx-mn),0,1);grad.addColorStop(0,'#6CC9F5');grad.addColorStop(f(-12),'#6CC9F5');grad.addColorStop(Math.min(1,f(-12)+.001),'#A43DFF');grad.addColorStop(f(0),'#A43DFF');grad.addColorStop(Math.min(1,f(0)+.001),'#FF1383');grad.addColorStop(1,'#FF1383');return grad}
+
+/* ============ Page 1: Multiband compressor ============ */
+const eng=new Engine();
+const p1=$('#page1');
+const SLOPE_LAB=SLOPES.map(s=>'Filter '+s+'dB');
+const MAXN=40;
+function mkPat(f){return f()}
+const PATS=[
+ {n:'Off',f:()=>[[0,1],[1,1]]},
+ {n:'Kick Accentuator Simple',f:()=>{const a=[[0,.4]];for(let b=0;b<4;b++){a.push([b/4+.004,.25],[b/4+.05,.7],[b/4+.2,1])}a.push([1,.4]);return a}},
+ {n:'Go Offbeat Go',f:()=>{const a=[[0,.3]];for(let b=0;b<4;b++){a.push([b/4+.01,.2],[b/4+.07,.9],[b/4+.125,1],[b/4+.2,.95])}a.push([1,.3]);return a}},
+ {n:'Offbeat Wave',f:()=>{const a=[];for(let k=0;k<=8;k++)a.push([k/8,k%2?1:.35]);return a}},
+ {n:'Hihat Rider',f:()=>{const a=[[0,1]];for(let k=0;k<16;k++){a.push([k/16+.006,k%2?.55:.8],[k/16+.04,1])}a.push([1,1]);return a}},
+ {n:'Four Floor Pump',f:()=>{const a=[[0,.3]];for(let b=0;b<4;b++)a.push([b/4+.003,.18],[b/4+.12,.85],[b/4+.2,1]);a.push([1,.3]);return a}},
+ {n:'Gate Eighths',f:()=>{const a=[];for(let k=0;k<8;k++)a.push([k/8,1],[k/8+.058,1],[k/8+.0625,.05],[k/8+.12,.05]);a.push([1,1]);return a}},
+ {n:'Rolling Swing',f:()=>{const a=[];for(let k=0;k<=16;k++)a.push([k/16,k%4===0?.35:k%4===2?.7:1]);return a}},
+ {n:'Slow Breath',f:()=>[[0,.4],[.25,1],[.5,.4],[.75,1],[1,.4]]}
+];
+const BANDP=[
+ {n:'Bass Finalize',p:{thr:-22,rat:1-1/7.35,knee:0,atk:40,rel:15,boost:0,lOn:1,lRel:50,lOut:0}},
+ {n:'Bass Tight',p:{thr:-24,rat:1-1/3.3,knee:0,atk:10,rel:5,boost:0,lOn:1,lRel:50,lOut:0}},
+ {n:'Mid Pumping',p:{thr:-28,rat:.999,knee:0,atk:40,rel:156,boost:0,lOn:1,lRel:33,lOut:-1}},
+ {n:'Treble Tight',p:{thr:-26,rat:1-1/4.4,knee:0,atk:10,rel:.5,boost:0,lOn:1,lRel:50,lOut:0}},
+ {n:'Kick Glue',p:{thr:-16,rat:1-1/4,knee:1,atk:30,rel:80,boost:1,lOn:1,lRel:40,lOut:-0.5}},
+ {n:'Vocal Smooth',p:{thr:-20,rat:1-1/2.5,knee:1,atk:15,rel:120,boost:1,lOn:0,lRel:50,lOut:0}},
+ {n:'Air Control',p:{thr:-30,rat:1-1/3,knee:1,atk:2,rel:60,boost:0,lOn:1,lRel:30,lOut:-1}},
+ {n:'Transparent',p:{thr:-14,rat:1-1/1.6,knee:1,atk:30,rel:.5,boost:0,lOn:0,lRel:50,lOut:0}}
+];
+function normX(){const g=1.18;let a=st['m.x1'],b=st['m.x2'],c=st['m.x3'];a=clamp(a,20,20000/g/g/g);b=clamp(b,a*g,20000/g/g);c=clamp(c,b*g,20000/g);st['m.x1']=a;st['m.x2']=b;st['m.x3']=c}
+function xOf(){return[st['m.x1'],st['m.x2'],st['m.x3']]}
+/* ---- left column ---- */
+const colL=el('div','sidecol');colL.innerHTML='<div class="cap">Pre</div>';
+const vuSeg=seg(colL,'m.vu',['VU','Density'],['VU meter: smoothed level (RMS, 300 ms feel) with a thin peak tick.','Density meter: the pale bar is the peak, the solid bar is the average level. The gap between them shows how dense (squashed) the sound is.'],'');
+const cvPre=el('canvas','cv');cvPre.dataset.tip='Level before the compressor (after the Pan and Gain knobs below). The cyan tick at -6 dB is the best input level for the compressor. Two bars, left and right, in dB. Blue is safe, purple is the warning zone, pink is clipping. The cap stays pink after a clip; click to clear it.';colL.appendChild(cvPre);const gPre=hd(cvPre,98,96,true);
+const rowL=el('div','row2');colL.appendChild(rowL);
+knob(rowL,{id:'m.inPan',label:'Pan',size:30,color:'#CD92FE',fmt:v=>v===0?'C':(v<0?'L':'R')+Math.abs(v).toFixed(0),tip:'Input pan: balance of the left and right channel before the compressor. Double-click for centre.'});
+knob(rowL,{id:'m.inG',label:'Gain dB',size:30,fmt:v=>fDb(v),tip:'Input gain in dB before the compressor. Range -24 to +24 dB. Double-click for 0.'});
+const latTxt=el('div','cap','');latTxt.style.cssText='font-size:10px;letter-spacing:.6px;text-align:center;color:var(--dim);text-transform:none;margin-top:2px';latTxt.dataset.tip='Latency reported to the host: the lookahead of the band limiters plus the master limiter. Change it in System.';colL.appendChild(latTxt);
+/* ---- right column ---- */
+const colR=el('div','sidecol');colR.innerHTML='<div class="cap">Post</div>';
+const cvPost=el('canvas','cv');cvPost.dataset.tip='Level after the compressor, master limiter and output Gain (before page 2). Two bars in dB. Blue is safe, purple is the warning zone, pink is clipping. The cap stays pink after a clip; click to clear it.';colR.appendChild(cvPost);const gPost=hd(cvPost,98,96,true);
+const rowR=el('div','row2');colR.appendChild(rowR);
+knob(rowR,{id:'m.outPan',label:'Pan',size:30,color:'#CD92FE',fmt:v=>v===0?'C':(v<0?'L':'R')+Math.abs(v).toFixed(0),tip:'Output pan after the bands are mixed. Double-click for centre.'});
+knob(rowR,{id:'m.outG',label:'Gain dB',size:30,fmt:v=>fDb(v),tip:'Output Gain in dB, after the main Mix and before the master limiter, so you can push the sound into the limiter for loudness. Range -24 to +24 dB.'});
+const limBox=el('div','row2');limBox.style.cssText='align-items:flex-end;margin-top:0;gap:2px';colR.appendChild(limBox);
+{const w=el('div','kb');w.dataset.tip='Master output limiter on or off. A lookahead limiter on the summed output. Needs Latency as shown on the left.';const l=el('div','kv','');w.appendChild(l);const pb=powerBtn(w,'m.limOn','Master output limiter on or off.');pb.style.margin='6px 0';const k=el('div','kl','Lim');w.appendChild(k);limBox.appendChild(w)}
+knob(limBox,{id:'m.postG',label:'Post',size:30,fmt:v=>fDb(v),tip:'Post limiter gain: a final gain after the master limiter, -12 to +12 dB. Raising it can push the output above the ceiling.'});
+knob(limBox,{id:'m.ceil',label:'Ceil',size:30,fmt:v=>v.toFixed(1),tip:'Master limiter ceiling in dB. Nothing leaves the plugin above this level (the sound is delayed by the lookahead so peaks are caught in time). Range -12 to 0 dB.'});
+const limGr=el('div','cap','');limGr.style.cssText='font-size:10px;text-align:center;color:var(--dim);text-transform:none;letter-spacing:.4px';limGr.dataset.tip='Master limiter gain reduction right now, in dB.';colR.appendChild(limGr);
+/* ---- centre ---- */
+const ctr=el('div','ctr');
+const gtop=el('div','gtop');ctr.appendChild(gtop);
+selectBox(gtop,'m.bands',['1 Band','2 Bands','3 Bands','4 Bands'].map((t,i)=>t),'Number of bands: 1 to 4. Drag the vertical dividers in the graph to place the crossovers. Unused bands are greyed out.',null,1);
+selectBox(gtop,'m.slope',SLOPE_LAB,'Crossover slope: how steeply the bands are separated, from 6 dB per octave (gentle) to 96 dB per octave (very steep). Default 36. Steeper slopes keep bands cleaner but use more CPU and ring slightly more. Linkwitz-Riley type, so the bands add back flat.');
+const mixw=el('div','mixwrap');gtop.appendChild(mixw);
+knob(mixw,{id:'m.mix',label:'Mix',size:36,cls:'h',fmt:fPct,tip:'Main Mix: dry against compressed, for parallel ("New York") compression. 100% is fully compressed. 50% is our default: it keeps the punch of the original and adds the weight of the squashed copy. The dry copy is time aligned.'});
+const mn=el('div','mixnote','New York tip: 50% Mix with fast, deep compression');mn.dataset.tip='New York compression: blend a heavily squashed copy under the untouched sound. Try low thresholds, ratio 6:1 or more, fast attack, and Mix around 30 to 50%.';mixw.appendChild(mn);
+const gright=el('div','gright');gtop.appendChild(gright);
+selectBox(gright,'m.fft',['FFT off','In + Out FFT','Input FFT','Output FFT'],'Spectrum overlay behind the bands. In + Out shows the input in grey and the output in green. Scale on the right is dBFS.');
+const cvG=el('canvas','cv');cvG.style.touchAction='none';cvG.dataset.tip='Frequency view, 20 Hz to 20 kHz. Drag the vertical dividers to move the crossovers. Drag the In handle (left of a band) and the Out handle (right of a band) up or down to trim that band before and after its processing. Left axis: band trim in dB. Right axis: spectrum in dBFS.';ctr.appendChild(cvG);
+const GW=920,GH=176;const gG=hd(cvG,GW,GH,true);
+const GX0=34,GX1=GW-30,GY0=6,GY1=GH-16;                     /* plot box */
+const msrow=el('div','msrow');ctr.appendChild(msrow);
+const msEls=[];
+for(let i=0;i<4;i++){const d=el('div','ms');msrow.appendChild(d);const mk=(id,txt,full,tip)=>{const b=el('button','chk','<span class="bx"></span><span class="t">'+txt+'</span>');b.dataset.tip=tip;b.dataset.full=txt;b.onclick=()=>setP('b'+i+'.'+id,st['b'+i+'.'+id]?0:1,true);d.appendChild(b);ctls.push({refresh(){b.classList.toggle('on',!!st['b'+i+'.'+id])}});return b};
+ mk('mute','Mute','Mute','Mute this band: its sound is removed from the output.');mk('solo','Solo','Solo','Solo this band: hear only soloed bands.');msEls.push(d)}
+p1.appendChild(Object.assign(el('div','p1'),{}));const p1grid=p1.firstChild;p1grid.appendChild(colL);p1grid.appendChild(ctr);p1grid.appendChild(colR);
+/* ---- strips ---- */
+const strips=el('div','strips');p1.appendChild(strips);
+const S=[];
+for(let i=0;i<4;i++){const b='b'+i+'.',col=BC[i];const so={};S.push(so);
+ const strip=el('div','strip');so.el=strip;strips.appendChild(strip);
+ const tp=el('div','tpart');strip.appendChild(tp);const l1=el('div','l1');tp.appendChild(l1);
+ knob(l1,{id:b+'mix',label:'Mix',size:28,cls:'h',fmt:fPct,color:col,tip:'Band Mix: dry against compressed for this band only. 100% is fully compressed.'});
+ const bs=el('div','bsel');l1.appendChild(bs);const pv=el('button','btn','&#9664;');pv.dataset.tip='Previous band preset: a compressor and limiter setup for this band only.';const nm=el('div','nm','- Select -');nm.dataset.tip='Band preset: click to pick a ready-made setting for this band only (it changes this band\'s compressor and limiter, nothing else).';const nx=el('button','btn','&#9654;');nx.dataset.tip='Next band preset.';
+ bs.appendChild(pv);bs.appendChild(nm);bs.appendChild(nx);
+ const stepBP=d=>{let k=st[b+'sel'];k=k<0?(d>0?0:BANDP.length-1):(k+d+BANDP.length)%BANDP.length;applyBandPreset(i,k)};pv.onclick=()=>stepBP(-1);nx.onclick=()=>stepBP(1);
+ nm.onclick=()=>openBandMenu(i,nm);so.nm=nm;
+ powerBtn(l1,b+'on','Band power: off lets the band pass unprocessed (it still goes through the crossover).');
+ so.cvIn=el('canvas','cv');so.cvIn.dataset.tip='Band input level in dB with the Threshold slider. Drag the white slider to set the threshold: the compressor works on everything above it. The orange tick is the limiter ceiling.';tp.appendChild(so.cvIn);so.cvIn.style.touchAction='none';so.gIn=hd(so.cvIn,271,36,true);so.cvIn.style.marginTop='0';
+ so.cvGr=el('canvas','cv');so.cvGr.dataset.tip='Gain reduction of this band: how many dB the compressor is turning the band down. Grows from the right. The scale is in dB.';tp.appendChild(so.cvGr);so.gGr=hd(so.cvGr,271,18,true);so.cvGr.style.marginTop='2px';
+ const cl=el('div','cl');strip.appendChild(cl);
+ const sc=el('div','sec c');cl.appendChild(sc);const r1=el('div','krow');sc.appendChild(r1);
+ const tl=el('div','');tl.style.cssText='width:42px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding-top:2px';tl.innerHTML='<div class="st" style="height:14px">COMP.</div>';powerBtn(tl,b+'cOn','Compressor on or off for this band.');r1.appendChild(tl);
+ knob(r1,{id:b+'rat',label:'Ratio',size:34,color:col,fmt:fRat,tip:'Compression ratio from 1:1 (nothing) to 1:inf (limiting). Level above the threshold is reduced by this ratio. With "Ratio in steps" in System it snaps to whole numbers (1:1, 2:1, 3:1 and so on).'});
+ so.cvCurve=el('canvas','cv');so.cvCurve.style.marginTop='13px';so.cvCurve.dataset.tip='Transfer curve: level in across, level out up, both in dB (-48 to 0). It shows the threshold, ratio and knee of this band.';r1.appendChild(so.cvCurve);so.gCurve=hd(so.cvCurve,46,40,true);
+ const ks=el('div','');ks.style.cssText='display:flex;flex-direction:column;gap:2px;margin-top:13px';const kh=el('button','tgb','H');kh.dataset.tip='Hard knee: the ratio starts exactly at the threshold. More obvious, punchier.';const kso=el('button','tgb','S');kso.dataset.tip='Soft knee: eases into the ratio over 6 dB around the threshold. Smoother, less obvious.';kh.style.cssText=kso.style.cssText='width:20px;padding:0;height:18px';
+ kh.onclick=()=>setP(b+'knee',0,true);kso.onclick=()=>setP(b+'knee',1,true);ks.appendChild(kh);ks.appendChild(kso);r1.appendChild(ks);ctls.push({refresh(){kh.classList.toggle('on',!st[b+'knee']);kso.classList.toggle('on',!!st[b+'knee'])}});
+ const r2=el('div','krow');r2.style.cssText='justify-content:space-between;padding:0 4px';sc.appendChild(r2);
+ knob(r2,{id:b+'atk',label:'Attack',size:28,color:col,fmt:fMs,tip:'Attack: how fast the compressor reacts when the level goes over the threshold. Slow lets the front of a kick through (punch), fast squashes it. 0.1 ms to 100 ms.'});
+ knob(r2,{id:b+'rel',label:'Release',size:28,color:col,fmt:v=>v<1?'AUTO':fMs(v),tip:'Release: how fast the compressor lets go. Below 1 ms it switches to AUTO: the time follows the signal (longer after deep compression). 0.5 ms (AUTO) to 1000 ms.'});
+ knob(r2,{id:b+'boost',label:'Boost',size:28,color:col,fmt:v=>'+'+v.toFixed(1)+'dB',tip:'Boost: make-up gain after the compressor, 0 to +24 dB. It pushes into the band limiter. With Autogain in System, extra make-up is added for you.'});
+ const sl=el('div','sec l');cl.appendChild(sl);const lrow=el('div','');lrow.style.cssText='display:flex;gap:4px';sl.appendChild(lrow);
+ const lc=el('div','');lc.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px;width:36px';lc.innerHTML='<div class="st" style="justify-content:center;height:14px;margin:0">LIM.</div>';powerBtn(lc,b+'lOn','Band limiter on or off. A lookahead limiter at the end of the band: nothing from this band goes above its Output level.');so.cvLim=el('canvas','cv');so.cvLim.dataset.tip='Band limiter gain reduction in dB, scale 0 to -12.';lc.appendChild(so.cvLim);so.gLim=hd(so.cvLim,32,78,true);lrow.appendChild(lc);
+ const lk=el('div','');lk.style.cssText='display:flex;flex-direction:column;gap:0;margin-top:0';lrow.appendChild(lk);
+ knob(lk,{id:b+'lRel',label:'Rls',size:28,color:col,fmt:v=>v<1?'AUTO':fMs(v),tip:'Limiter release: how fast the limiter lets go. Below 1 ms it switches to AUTO (program dependent: longer after deep limiting). 0.5 ms (AUTO) to 1000 ms.'});
+ knob(lk,{id:b+'lOut',label:'Output',size:28,color:col,fmt:v=>(v>-0.05?'+0':v.toFixed(1))+'dB',tip:'Limiter output: the ceiling for this band in dB, -12 to 0. Together with Boost this is how loud the band gets.'});
+ /* display part */
+ const dp=el('div','dpart');strip.appendChild(dp);
+ so.cvSc=el('canvas','cv');so.cvSc.style.touchAction='none';so.cvSc.dataset.tip='Band display. Scope: red is the original band, green is the compressed band, grey is where they overlap, shown as a waveform shape in dB over the last seconds, with the threshold as a dashed line. Gain Red.: how much the band was turned down over time, in dB. Choose with the buttons below; Zoom changes the time span.';dp.appendChild(so.cvSc);so.gSc=hd(so.cvSc,271,90,true);
+ so.dpc=el('div','dprow');dp.appendChild(so.dpc);so.dpc.style.display='none';
+ const dl=el('div','');dl.style.cssText='display:flex;flex-direction:column;gap:2px';so.dpc.appendChild(dl);
+ const dh=el('div','');dh.style.cssText='display:flex;align-items:center;gap:6px;height:20px';dl.appendChild(dh);powerBtn(dh,b+'dOn','Dynamic Pattern Compressor on or off for this band. It shapes the band gain in time with the beat.');
+ const psel=el('select','sel');psel.style.cssText='height:20px;flex:1;min-width:0;font-size:12px';PATS.forEach((p,k)=>{const o=el('option','',p.n);o.value=k;psel.appendChild(o)});psel.dataset.tip='DPC pattern: a gain shape that repeats every 4 beats and follows the host transport. Pick one, then drag its points. Click empty space to add a point, double-click a point to remove it.';psel.onchange=()=>{setP(b+'patI',+psel.value,true);pats[i]=PATS[+psel.value].f();syncUI()};dh.appendChild(psel);ctls.push({refresh(){psel.value=st[b+'patI']}});
+ so.cvDpc=el('canvas','cv');so.cvDpc.style.touchAction='none';so.cvDpc.dataset.tip='DPC pattern editor, 4 beats wide. Top is no change (0 dB), lower means the band is turned down (scaled by Strength). The white line is the playhead. Drag points; ends stay at the edges.';dl.appendChild(so.cvDpc);so.gDpc=hd(so.cvDpc,221,72,true);
+ const dc=el('div','dpcol');so.dpc.appendChild(dc);
+ const gb=el('button','tgb vbtn','1/16');gb.dataset.tip='Grid and snap for the pattern points: 1/16, 1/8 or 1/4 of a beat. Click to change.';gb.onclick=()=>setP(b+'dGrid',(st[b+'dGrid']+1)%3,true);dc.appendChild(gb);ctls.push({refresh(){gb.textContent=['1/16','1/8','1/4'][st[b+'dGrid']]}});
+ [['dX2','x2','Double speed: the pattern runs twice as fast (every 2 beats instead of 4).'],['dPre','pre Lim','Apply the pattern before the band limiter (on) or after it (off). Before the limiter the limiter can still catch the peaks.'],['dFlip','Flip','Flip the pattern upside down.']].forEach(([id,t,tip])=>{const x=el('button','tgb vbtn',t);x.dataset.tip=tip;x.onclick=()=>setP(b+id,st[b+id]?0:1,true);dc.appendChild(x);ctls.push({refresh(){x.classList.toggle('on',!!st[b+id])}})});
+ const bt=el('div','dpbot');dp.appendChild(bt);
+ [['Scope','Scope view: red is the original band, green the compressed band, grey where they overlap, as a waveform shape in dB.'],['Gain Red.','Gain reduction view: how much this band was turned down over the last seconds, in dB.'],['DPC','Dynamic Pattern Compressor: edit the beat-synced gain pattern for this band.']].forEach(([t,tip],k)=>{const x=el('button','tgb',t);x.style.width=k===1?'60px':'54px';x.dataset.tip=tip;x.onclick=()=>setP(b+'view',k,true);bt.appendChild(x);ctls.push({refresh(){x.classList.toggle('on',st[b+'view']===k);if(k===2)x.classList.toggle('yel',true)}})});
+ const zk=knob(bt,{id:b+'zoom',label:'Zoom',size:26,color:col,fmt:v=>Math.round(1+v*7)+'x',tip:'Zoom the time axis of the Scope and Gain Red. views, 1x to 8x.',cls:'h'});so.zk=zk;
+ const sk=knob(bt,{id:b+'dStr',label:'Strength',size:26,color:col,fmt:fPct,tip:'DPC strength: how deep the pattern turns the band down. 100% is up to 24 dB. 0% is off.',cls:'h'});so.sk=sk;
+}
+//'.kb.h{flex-direction:row;gap:4px;align-items:center;margin-left:auto}.kb.h .knob{order:0}.kb.h .kv{order:2;position:absolute;margin-top:12px;margin-left:30px;height:12px}.kb.h{position:relative;width:70px;height:26px}.kb.h .kl{position:absolute;left:30px;top:0;font-size:11px}';
+function applyBandPreset(i,k){const b='b'+i+'.',p=BANDP[k].p;for(const q in p)st[b+q]=p[q];st[b+'sel']=k;syncUI()}
+function openBandMenu(i,anchor){const body=el('div','');BANDP.forEach((bp,k)=>{const x=el('button','btn',esc(bp.n));x.style.cssText='display:block;width:100%;text-align:left;margin:3px 0;font-size:16px';x.onclick=()=>{applyBandPreset(i,k);closeModal()};body.appendChild(x)});openModal('Band '+(i+1)+' preset',body,[btn('Cancel',closeModal)],'360px')}
+/* ============ DPC curve table ============ */
+function buildLut(i){const n=pats[i].slice().sort((a,b)=>a[0]-b[0]),lut=new Float32Array(513);let j=0;
+ for(let k=0;k<=512;k++){const x=k/512;while(j<n.length-2&&n[j+1][0]<x)j++;const a=n[j],b=n[Math.min(j+1,n.length-1)];const d=b[0]-a[0];const t=d>1e-6?clamp((x-a[0])/d,0,1):1;const u=.5-.5*Math.cos(Math.PI*t);lut[k]=a[1]+(b[1]-a[1])*u}return lut}
+/* ============ core state to engine ============ */
+function coreM(){const x=xOf();return{bands:st['m.bands'],slope:st['m.slope'],x,mix:st['m.mix'],inG:st['m.inG'],inPan:st['m.inPan']/100,outG:st['m.outG'],outPan:st['m.outPan']/100,postG:st['m.postG'],lim:{on:!!st['m.limOn'],ceil:st['m.ceil']},on:!!st['m.on'],
+ b:[0,1,2,3].map(i=>{const b='b'+i+'.';return{on:!!st[b+'on'],cOn:!!st[b+'cOn'],thr:st[b+'thr'],u:st[b+'rat'],knee:!!st[b+'knee'],atk:st[b+'atk'],rel:st[b+'rel'],boost:st[b+'boost'],lOn:!!st[b+'lOn'],lRel:st[b+'lRel'],lOut:st[b+'lOut'],inG:st[b+'inG'],outG:st[b+'outG'],mix:st[b+'mix'],mute:!!st[b+'mute'],solo:!!st[b+'solo'],dOn:!!st[b+'dOn'],dStr:st[b+'dStr'],dX2:!!st[b+'dX2'],dFlip:!!st[b+'dFlip'],dPre:!!st[b+'dPre'],pat:pats[i],lut:lutCache[i]}})}}
+const lutCache=[0,1,2,3].map(()=>new Float32Array(513).fill(1));
+/* ============ Graph interaction and drawing ============ */
+const DBT=[8,6,3,0,-3,-6,-12,-18,-24],YDB=d=>GY0+(8-clamp(d,-24,8))/32*(GY1-GY0),DBY=y=>8-(y-GY0)/(GY1-GY0)*32;
+function bandEdges(){const n=st['m.bands'],x=xOf(),e=[20];for(let k=0;k<n-1;k++)e.push(x[k]);e.push(20000);return e}
+let gdrag=null,ghover=null;
+function gHit(e){const r=cvG.getBoundingClientRect(),sc=curScale(),mx=(e.clientX-r.left)/sc-1,my=(e.clientY-r.top)/sc-1;const ed=bandEdges(),n=st['m.bands'];
+ for(let k=1;k<n;k++){const x=fx(ed[k],GX0,GX1-GX0);if(Math.abs(mx-x)<6&&my>GY0&&my<GY1)return{t:'x',k:k-1,mx,my}}
+ for(let b=0;b<n;b++){const x0=fx(ed[b],GX0,GX1-GX0),x1=fx(ed[b+1],GX0,GX1-GX0);if(mx<x0||mx>x1)continue;
+  const yi=YDB(st['b'+b+'.inG']),yo=YDB(st['b'+b+'.outG']);const wl=x0+(x1-x0)*.5;
+  if(mx<wl&&Math.abs(my-yi)<9)return{t:'in',k:b,mx,my};if(mx>=wl&&Math.abs(my-yo)<9)return{t:'out',k:b,mx,my}}
+ return{t:null,mx,my}}
+cvG.addEventListener('pointerdown',e=>{const h=gHit(e);if(!h.t)return;cvG.setPointerCapture(e.pointerId);gdrag=h;e.preventDefault()});
+cvG.addEventListener('pointermove',e=>{if(!gdrag){const h=gHit(e);ghover=h.t;cvG.style.cursor=h.t==='x'?'ew-resize':h.t?'ns-resize':'default';return}
+ const r=cvG.getBoundingClientRect(),sc=curScale(),mx=(e.clientX-r.left)/sc-1,my=(e.clientY-r.top)/sc-1;
+ if(gdrag.t==='x'){st['m.x'+(gdrag.k+1)]=xf(clamp(mx,GX0,GX1),GX0,GX1-GX0);normX();syncUI(true)}
+ else{const d=clamp(DBY(my),-24,8),id='b'+gdrag.k+'.'+(gdrag.t==='in'?'inG':'outG');setP(id,Math.abs(d)<.6?0:d,true)}});
+cvG.addEventListener('pointerup',()=>gdrag=null);cvG.addEventListener('pointercancel',()=>gdrag=null);
+cvG.addEventListener('dblclick',e=>{const h=gHit(e);if(h.t==='in')setP('b'+h.k+'.inG',0,true);else if(h.t==='out')setP('b'+h.k+'.outG',0,true);else if(h.t==='x'){const defs=[110,500,5000];st['m.x'+(h.k+1)]=defs[h.k];normX();syncUI()}});
+function specPath(g,sp,fs,x0,x1,fn){const n=FN/2,w=x1-x0;g.beginPath();let first=true;
+ for(let x=0;x<=w;x+=1){const f0=xf(x0+x,x0,w),f1=xf(x0+x+1,x0,w),b0=f0*FN/fs,b1=f1*FN/fs;let d;
+  if(b1-b0<1){const bf=clamp((b0+b1)/2,1,n-2),i=Math.floor(bf),fr=bf-i;d=sp.db[i]*(1-fr)+sp.db[i+1]*fr}
+  else{let s=0,c=0;for(let k=Math.max(1,Math.floor(b0));k<=Math.min(n-1,Math.ceil(b1));k++){s+=Math.pow(10,sp.db[k]/10);c++}d=10*Math.log10(s/Math.max(1,c)+1e-12)}
+  const y=fn(d);if(first){g.moveTo(x0+x,y);first=false}else g.lineTo(x0+x,y)}}
+const SPY=d=>GY1-(clamp(d,-96,-6)+96)/90*(GY1-GY0);
+function drawGraph(){const g=gG,w=GW,h=GH;g.fillStyle=T.disp;g.fillRect(0,0,w,h);const n=st['m.bands'],ed=bandEdges(),pw=GX1-GX0,fs=eng.fs;
+ g.font='9px JetBrains Mono,monospace';g.textBaseline='alphabetic';
+ /* grid */
+ g.lineWidth=1;for(const d of DBT){const y=YDB(d);g.strokeStyle=d===0?'#4a4d55':T.line;g.beginPath();g.moveTo(GX0,y);g.lineTo(GX1,y);g.stroke();g.fillStyle=T.dim;g.textAlign='right';g.fillText((d>0?'+':'')+d,GX0-4,y+3)}
+ const FL=[25,50,125,250,500,1000,2000,4000,8000,12000,18000],FT=['25 Hz','50 Hz','125 Hz','250 Hz','500 Hz','1 kHz','2 kHz','4 kHz','8 kHz','12 kHz','18 kHz'];
+ FL.forEach((f,k)=>{const x=fx(f,GX0,pw);g.strokeStyle=T.line;g.beginPath();g.moveTo(x,GY0);g.lineTo(x,GY1);g.stroke();g.fillStyle=T.dim;g.textAlign='center';g.fillText(FT[k],clamp(x,GX0+14,GX1-10),GH-4)});
+ g.textAlign='left';for(const d of[-80,-60,-40,-20]){const y=SPY(d);g.fillStyle=T.dim;g.globalAlpha=.8;g.fillText(d,GX1+4,y+3);g.fillRect(GX1,y,3,1);g.globalAlpha=1}g.fillText('dBFS',GX1+3,GY0+8);
+ /* band regions */
+ for(let b=0;b<n;b++){const x0=fx(ed[b],GX0,pw),x1=fx(ed[b+1],GX0,pw),yi=YDB(st['b'+b+'.inG']),yo=YDB(st['b'+b+'.outG']),y0=YDB(0);
+  g.fillStyle=hex2rgba(BC[b],.13);g.fillRect(x0,GY0,x1-x0,GY1-GY0);
+  g.fillStyle=hex2rgba(BC[b],.20);g.fillRect(x0,yi,(x1-x0)*.5,GY1-yi);g.fillStyle=hex2rgba(BC[b],.12);g.fillRect(x0+(x1-x0)*.5,yo,(x1-x0)*.5,GY1-yo);
+  const muted=st['b'+b+'.mute']||(eng.anySolo&&!st['b'+b+'.solo']);if(muted){g.fillStyle='rgba(0,0,0,.5)';g.fillRect(x0,GY0,x1-x0,GY1-GY0)}
+  const hl=(ghover==='in'&&gdrag&&gdrag.k===b)||(gdrag&&gdrag.t==='in'&&gdrag.k===b);
+  g.strokeStyle=BC[b];g.lineWidth=1.6;g.setLineDash([]);g.beginPath();g.moveTo(x0+2,yi);g.lineTo(x0+(x1-x0)*.5-2,yi);g.stroke();
+  g.beginPath();g.moveTo(x0+(x1-x0)*.5+2,yo);g.lineTo(x1-2,yo);g.stroke();
+  const wb=x1-x0;if(wb>46){g.fillStyle=BC[b];g.textAlign='left';g.font='700 10px Barlow Condensed,Arial Narrow,sans-serif';
+   g.fillText('In '+fDb(st['b'+b+'.inG'],1).replace(' dB','')+'',x0+4,clamp(yi-3,GY0+9,GY1-3));g.textAlign='right';g.fillText('Out '+fDb(st['b'+b+'.outG'],1).replace(' dB',''),x1-4,clamp(yo-3,GY0+9,GY1-3))}
+  const sq=(x,y,up)=>{g.fillStyle=BC[b];g.beginPath();g.moveTo(x,y);g.lineTo(x+(up?-5:5),y-4);g.lineTo(x+(up?-5:5),y+4);g.closePath();g.fill()};
+  sq(x0+3,yi,false);sq(x1-3,yo,true);g.font='9px JetBrains Mono,monospace'}
+ /* spectrum */
+ const fm=st['m.fft'];if(fm>0){const draw=(sp,col,a,fill)=>{specPath(g,sp,fs,GX0,GX1,SPY);if(fill){g.lineTo(GX1,GY1);g.lineTo(GX0,GY1);g.closePath();g.fillStyle=hex2rgba(col,.10);g.fill()}else{}};
+  if(fm===1||fm===2){specPath(g,eng.sp.pre,fs,GX0,GX1,SPY);g.strokeStyle='rgba(200,204,214,.85)';g.lineWidth=1.2;g.stroke()}
+  if(fm===1||fm===3){specPath(g,eng.sp.post,fs,GX0,GX1,SPY);g.strokeStyle='#02EBBA';g.lineWidth=1.4;g.stroke()}}
+ /* crossover lines */
+ for(let k=1;k<n;k++){const x=fx(ed[k],GX0,pw);g.strokeStyle=ghover==='x'?'#fff':'#e8e9ee';g.lineWidth=1.5;g.beginPath();g.moveTo(x,GY0);g.lineTo(x,GY1);g.stroke();
+  g.fillStyle='#e8e9ee';g.beginPath();g.moveTo(x-5,GY0);g.lineTo(x+5,GY0);g.lineTo(x,GY0+7);g.fill();g.fillStyle=T.title;g.font='700 11px Barlow Condensed,Arial Narrow,sans-serif';g.textAlign=x>GX1-60?'right':'left';g.fillText(fHz(ed[k]),x+(x>GX1-60?-6:6),GY0+16);g.font='9px JetBrains Mono,monospace'}
+ g.strokeStyle=T.line;g.lineWidth=1;g.strokeRect(GX0,GY0,pw,GY1-GY0)}
+function layoutMS(){const n=st['m.bands'],ed=bandEdges(),pw=GX1-GX0;msEls.forEach((d,i)=>{if(i>=n){d.style.display='none';return}d.style.display='flex';const x0=fx(ed[i],GX0,pw),x1=fx(ed[i+1],GX0,pw);d.style.left=(x0+1)+'px';d.style.width=(x1-x0)+'px';d.style.borderColor=hex2rgba(BC[i],.6);d.style.background=hex2rgba(BC[i],.10);
+  const compact=(x1-x0)<112;d.querySelectorAll('button').forEach(b=>{b.querySelector('.t').textContent=compact?b.dataset.full[0]:b.dataset.full;b.style.gap=compact?'3px':'4px'});d.style.gap=compact?'6px':'12px'})}
+/* ---- VU meters ---- */
+const clipL={pre:[0,0],post:[0,0]};
+function drawVU(g,m,key){const w=98,h=96,mn=-60,mx=6,Y=d=>h-8-(clamp(d,mn,mx)-mn)/(mx-mn)*(h-14);g.fillStyle=T.disp;g.fillRect(0,0,w,h);
+ const grad=meterColor(g,Y(mn),Y(mx),mn,mx);const dens=st['m.vu']===1;
+ const bars=[[m.l,m.rl],[m.r,m.rr]];
+ g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='right';
+ for(const t of[6,0,-6,-12,-24,-36,-48]){const y=Y(t);g.fillRect(20,y,3,1);g.fillText(String(t),18,y+3)}
+ if(key==='pre'){g.fillStyle='#01FCDC';g.fillRect(24,Y(-6)-1,3,3);g.fillRect(86,Y(-6)-1,3,3)}
+ bars.forEach(([pk,rms],k)=>{const x=28+k*30,pd=L2D(pk),rd=10*Math.log10(rms+1e-12)+3;
+  if(dens){g.fillStyle='rgba(169,173,184,.30)';g.fillRect(x,Y(pd),22,Y(mn)-Y(pd));g.fillStyle=grad;g.fillRect(x+4,Y(rd),14,Y(mn)-Y(rd))}
+  else{g.fillStyle=grad;g.fillRect(x,Y(rd),22,Y(mn)-Y(rd));g.fillStyle='#fff';g.fillRect(x,Y(pd),22,2)}
+  if(pd>=0)clipL[key][k]=1;g.fillStyle=clipL[key][k]?'#FF1383':'#2a2c31';g.fillRect(x,0,22,4)});
+ g.fillStyle=T.dim;g.textAlign='center';g.fillText('L',39,h-0);g.fillText('R',69,h-0)}
+cvPre.onclick=()=>clipL.pre=[0,0];cvPost.onclick=()=>clipL.post=[0,0];
+/* ---- strip drawing ---- */
+function drawStrips(){const n=st['m.bands'];
+ for(let i=0;i<4;i++){const b='b'+i+'.',S1=S[i],bs=eng.bs[i],act=i<n;S1.el.dataset.off=act?'0':'1';S1.el.style.pointerEvents=act?'':'none';if(!act)continue;
+  /* input meter with threshold */
+  {const g=S1.gIn,w=271,h=36,X=d=>6+(clamp(d,-60,0)+60)/60*(w-12);g.fillStyle=T.disp;g.fillRect(0,0,w,h);g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='center';
+   [[-60,'-inf'],[-48,'-48'],[-36,'-36'],[-24,'-24'],[-12,'-12'],[0,'0']].forEach(([d,t])=>{g.fillText(t,clamp(X(d),12,w-8),23);g.fillRect(X(d),12,1,3)});
+   const lv=bs.lvl;g.fillStyle=BC[i];const ew=X(lv)-X(-60);if(ew>0){const gr=g.createLinearGradient(X(-60),0,X(0),0);gr.addColorStop(0,'#6CC9F5');gr.addColorStop(.8,'#6CC9F5');gr.addColorStop(.801,'#A43DFF');gr.addColorStop(.999,'#A43DFF');gr.addColorStop(1,'#FF1383');g.fillStyle=gr;g.fillRect(X(-60),3,ew,8)}
+   g.fillStyle=T.dim;g.fillRect(X(-60),3,0,0);g.strokeStyle=T.line;g.strokeRect(X(-60)-.5,2.5,X(0)-X(-60)+1,9);
+   const tx=X(st[b+'thr']);g.fillStyle='#fff';g.fillRect(tx-2,0,4,14);g.fillStyle=T.title;g.font='700 10px Barlow Condensed,sans-serif';g.textAlign='left';g.fillText('Threshold '+st[b+'thr'].toFixed(1)+' dB',8,33);
+   if(st[b+'lOn']){const cx=X(st[b+'lOut']);g.fillStyle='#F57F01';g.fillRect(cx-1,2,2,10)}}
+  {const g=S1.gGr,w=271,h=18,gr=Math.max(bs.cur,0);g.fillStyle=T.disp;g.fillRect(0,0,w,h);const X=d=>6+(48-clamp(d,0,48))/48*(w-12);
+   g.fillStyle='#CD92FE';const gw=X(0)-X(gr);if(gw>0)g.fillRect(X(gr),2,gw,6);g.strokeStyle=T.line;g.strokeRect(X(48)-.5,1.5,X(0)-X(48)+1,7);g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='center';
+   [[48,'-48'],[36,'-36'],[24,'-24'],[12,'-12'],[6,'-6'],[0,'0']].forEach(([d,t])=>{g.fillText(t,clamp(X(d),10,w-6),h-1)});g.fillStyle=T.ink;g.textAlign='left';g.fillText('GR '+(-gr).toFixed(1)+' dB',8,8)}
+  /* ratio curve */
+  {const g=S1.gCurve,w=46,h=40,p=eng.bp[i];g.fillStyle=T.disp;g.fillRect(0,0,w,h);const X=d=>3+(d+48)/48*(w-6),Y=d=>h-3-(d+48)/48*(h-6);g.strokeStyle=T.line;g.lineWidth=1;g.strokeRect(3,3,w-6,h-6);
+   g.strokeStyle='#4a4d55';g.setLineDash([2,2]);g.beginPath();g.moveTo(X(-48),Y(-48));g.lineTo(X(0),Y(0));g.stroke();g.setLineDash([]);
+   g.strokeStyle=BC[i];g.lineWidth=1.8;g.beginPath();for(let d=-48;d<=0;d+=1){const o=d-grCurve(d-p.thr,p.R,p.knee,6);d===-48?g.moveTo(X(d),Y(o)):g.lineTo(X(d),Y(clamp(o,-48,0)))}g.stroke();
+   g.fillStyle=T.dim;g.font='8px JetBrains Mono,monospace';g.textAlign='left';g.fillText('0',w-9,h-4)}
+  /* limiter GR */
+  {const g=S1.gLim,w=32,h=78,gr=clamp(bs.lgr,0,12),Y=d=>6+d/12*(h-12);g.fillStyle=T.disp;g.fillRect(0,0,w,h);g.fillStyle='#FF7BB1';g.fillRect(2,6,8,Y(gr)-6);g.strokeStyle=T.line;g.strokeRect(2.5,5.5,8,h-12);g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='left';
+   [0,3,6,9,12].forEach(d=>{g.fillRect(11,Y(d),3,1);g.fillText(d===0?'0':'-'+d,15,Y(d)+3)})}
+  /* big display */
+  const v=st[b+'view'];S1.cvSc.style.display=v===2?'none':'block';S1.dpc.style.display=v===2?'flex':'none';S1.zk.style.display=v===2?'none':'';S1.sk.style.display=v===2?'':'none';
+  if(v===0)drawScope(i);else if(v===1)drawGrHist(i);else drawDpc(i)}}
+function drawScope(i){const g=S[i].gSc,w=271,h=90,bs=eng.bs[i],b='b'+i+'.';g.fillStyle=T.disp;g.fillRect(0,0,w,h);const N=Math.round(480/(1+st[b+'zoom']*7)),cy=h/2,A=(h-22)/2;
+ const ampY=a=>clamp((L2D(a)+54)/54,0,1)*A;
+ g.strokeStyle=T.line;g.lineWidth=1;g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='left';
+ [0,-12,-24,-48].forEach(d=>{const y=cy-(d+54)/54*A;g.beginPath();g.moveTo(24,y);g.lineTo(w-3,y);g.stroke();g.beginPath();g.moveTo(24,2*cy-y);g.lineTo(w-3,2*cy-y);g.stroke();g.fillText(String(d),2,y+3)});
+ const X=k=>26+k/(N-1)*(w-30);
+ const path=(arr,fill,col,al)=>{g.beginPath();for(let k=0;k<N;k++){const v=arr[(bs.sc+480-N+k)%480];const x=X(k);k?g.lineTo(x,cy-ampY(v)):g.moveTo(x,cy-ampY(v))}for(let k=N-1;k>=0;k--){const v=arr[(bs.sc+480-N+k)%480];g.lineTo(X(k),cy+ampY(v))}g.closePath();g.fillStyle=col;g.globalAlpha=al;g.fill();g.globalAlpha=1};
+ const mn=new Float32Array(480);for(let k=0;k<480;k++)mn[k]=Math.min(bs.scI[k],bs.scO[k]);
+ path(bs.scI,1,'#FF3D5A',.85);path(bs.scO,1,'#02EBBA',.85);path(mn,1,'#b9bcc6',.9);
+ const thr=st[b+'thr'],ty=cy-(clamp(thr,-54,0)+54)/54*A;g.strokeStyle='#fff';g.setLineDash([3,3]);g.beginPath();g.moveTo(24,ty);g.lineTo(w-3,ty);g.stroke();g.beginPath();g.moveTo(24,2*cy-ty);g.lineTo(w-3,2*cy-ty);g.stroke();g.setLineDash([]);
+ g.fillStyle=T.dim;g.textAlign='center';const secs=N*0.006;[1,.5,0].forEach((f,k)=>{const t=(secs*f);g.fillText(f===0?'now':'-'+t.toFixed(2)+'s',clamp(26+(1-f)*(w-30),24,w-16),h-3)})}
+function drawGrHist(i){const g=S[i].gSc,w=271,h=90,b='b'+i+'.',N=Math.round(360/(1+st[b+'zoom']*7)),h0=eng.grHist[i],Y=d=>6+d/24*(h-26);g.fillStyle=T.disp;g.fillRect(0,0,w,h);g.strokeStyle=T.line;g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='left';
+ [0,6,12,18,24].forEach(d=>{g.beginPath();g.moveTo(26,Y(d));g.lineTo(w-3,Y(d));g.stroke();g.fillText(d===0?'0':'-'+d,2,Y(d)+3)});
+ g.beginPath();g.moveTo(26,Y(0));for(let k=0;k<N;k++){const v=h0[(eng.ghN+360-N+k)%360];g.lineTo(26+k/(N-1)*(w-30),Y(clamp(v,0,24)))}g.lineTo(w-4,Y(0));g.closePath();g.fillStyle=hex2rgba(BC[i],.35);g.fill();g.strokeStyle=BC[i];g.lineWidth=1.6;g.stroke();
+ g.textAlign='center';const secs=N/60;[1,.5,0].forEach(f=>{g.fillText(f===0?'now':'-'+(secs*f).toFixed(1)+'s',clamp(26+(1-f)*(w-30),26,w-14),h-3)})}
+/* ---- DPC editor ---- */
+const DW=221,DH=72,DX0=4,DX1=DW-22,DY0=5,DY1=DH-5;
+function dpcGridStep(i){return [1/16,1/8,1/4][st['b'+i+'.dGrid']]/4}
+function drawDpc(i){const g=S[i].gDpc,b='b'+i+'.',n=pats[i].slice().sort((a,c)=>a[0]-c[0]),flip=st[b+'dFlip'],pw=DX1-DX0,Y=y=>DY0+(1-y)*(DY1-DY0),X=x=>DX0+x*pw;
+ g.fillStyle=T.disp;g.fillRect(0,0,DW,DH);const x2=st[b+'dX2'];
+ const gs=dpcGridStep(i);g.lineWidth=1;for(let q=0;q<=1.0001;q+=gs){const beat=Math.abs(q*4-Math.round(q*4))<1e-6;g.strokeStyle=beat?'#4a4d55':T.line;g.beginPath();g.moveTo(X(q),DY0);g.lineTo(X(q),DY1);g.stroke()}
+ g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='left';const str=st[b+'dStr']/100;g.fillText('0',DX1+3,DY0+7);g.fillText('-'+Math.round(24*str),DX1+3,DY1);g.fillText('dB',DX1+3,(DY0+DY1)/2+3);
+ g.strokeStyle=hex2rgba(BC[i],1);g.lineWidth=1.8;g.beginPath();const lut=lutCache[i];for(let k=0;k<=128;k++){let y=lut[k*4];if(flip)y=1-y;k?g.lineTo(X(k/128),Y(y)):g.moveTo(X(k/128),Y(y))}g.stroke();
+ n.forEach((p,k)=>{const ed=(k===0||k===n.length-1);const y=flip?1-p[1]:p[1];g.fillStyle=ed?'#FF1383':'#6CC9F5';g.beginPath();g.arc(X(p[0]),Y(y),3.2,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=.8;g.stroke()});
+ const beat=eng.tpos/(SPB*eng.fs),ph=((beat/(x2?2:4))%1+1)%1;g.strokeStyle='#fff';g.lineWidth=1;g.beginPath();g.moveTo(X(ph),DY0);g.lineTo(X(ph),DY1);g.stroke();
+ g.fillStyle=T.dim;g.textAlign='center';['1','2','3','4'].forEach((t,k)=>g.fillText(x2?(k<2?t:''):t,X((k+.5)/4),DH-0.5));
+ if(!st[b+'dOn']){g.fillStyle='rgba(0,0,0,.45)';g.fillRect(0,0,DW,DH);g.fillStyle=T.ink;g.font='700 12px Barlow Condensed,sans-serif';g.textAlign='center';g.fillText('DPC is off, press the red lamp',DW/2-10,DH/2)}}
+S.forEach((S1,i)=>{const cv=S1.cvDpc;let dr=null;
+ const pos=e=>{const r=cv.getBoundingClientRect(),sc=curScale();return[(e.clientX-r.left)/sc-1,(e.clientY-r.top)/sc-1]};
+ const toN=([mx,my])=>{const flip=st['b'+i+'.dFlip'];let x=clamp((mx-DX0)/(DX1-DX0),0,1),y=clamp(1-(my-DY0)/(DY1-DY0),0,1);if(flip)y=1-y;return[x,y]};
+ const snap=x=>{const gs=dpcGridStep(i);return clamp(Math.round(x/gs)*gs,0,1)};
+ cv.addEventListener('pointerdown',e=>{const m=pos(e),flip=st['b'+i+'.dFlip'];let hit=-1,bd=64;pats[i].forEach((p,k)=>{const y=flip?1-p[1]:p[1];const dx=DX0+p[0]*(DX1-DX0)-m[0],dy=DY0+(1-y)*(DY1-DY0)-m[1];const d=dx*dx+dy*dy;if(d<bd){bd=d;hit=k}});
+  if(hit<0){if(pats[i].length>=MAXN)return;const nn=toN(m);nn[0]=snap(nn[0]);pats[i].push(nn);pats[i].sort((a,b)=>a[0]-b[0]);hit=pats[i].indexOf(nn);setP('b'+i+'.patI',0,false)}
+  dr={k:hit};cv.setPointerCapture(e.pointerId);e.preventDefault();syncUI(true)});
+ cv.addEventListener('pointermove',e=>{if(!dr)return;const p=pats[i][dr.k];if(!p)return;const nn=toN(pos(e));p[1]=nn[1];const first=p[0]===0&&pats[i].filter(q=>q[0]===0)[0]===p,last=p[0]===1&&pats[i].filter(q=>q[0]===1).pop()===p;if(!(first||last))p[0]=snap(nn[0]);syncUI(true)});
+ cv.addEventListener('pointerup',()=>{if(dr){pats[i].sort((a,b)=>a[0]-b[0]);dr=null;syncUI()}});cv.addEventListener('pointercancel',()=>dr=null);
+ cv.addEventListener('dblclick',e=>{const m=pos(e),flip=st['b'+i+'.dFlip'];if(pats[i].length<=2)return;let hit=-1,bd=64;pats[i].forEach((p,k)=>{const y=flip?1-p[1]:p[1];const dx=DX0+p[0]*(DX1-DX0)-m[0],dy=DY0+(1-y)*(DY1-DY0)-m[1];const d=dx*dx+dy*dy;if(d<bd){bd=d;hit=k}});if(hit>=0&&pats[i][hit][0]>0&&pats[i][hit][0]<1){pats[i].splice(hit,1);syncUI()}});
+ /* threshold slider on the input meter */
+ const ci=S1.cvIn;let td=false;const tset=e=>{const r=ci.getBoundingClientRect(),sc=curScale(),mx=(e.clientX-r.left)/sc-1;const d=-60+(mx-6)/(271-12)*60;setP('b'+i+'.thr',Math.round(clamp(d,-48,0)*2)/2,true)};
+ ci.addEventListener('pointerdown',e=>{td=true;ci.setPointerCapture(e.pointerId);tset(e);e.preventDefault()});ci.addEventListener('pointermove',e=>{if(td)tset(e)});ci.addEventListener('pointerup',()=>td=false);ci.addEventListener('dblclick',()=>setP('b'+i+'.thr',-18,true))});
+
+/* ============ Page 2: Multiband sidechain ============ */
+const p2=$('#page2');
+const top2=el('div','p2top');p2.appendChild(top2);
+{const g=el('div','grp');g.innerHTML='<span class="cap">Trigger mode</span>';radios(g,'s.trig',['Audio','MIDI','Host Sync'],['Audio: the sidechain signal (after the EQ below) triggers the envelope when it passes the Sens level, like a kick on a sidechain input.','MIDI: each MIDI note-on triggers the envelope. In the preview rig the kick pattern plays the role of the MIDI notes.','Host Sync: the envelope restarts on the beat grid of the host transport (grid and offset below). No audio needed. Our rig runs at 150 BPM.']);top2.appendChild(g)}
+{const g=el('div','grp');g.style.marginLeft='auto';knob(g,{id:'s.sens',label:'Sens',size:28,fmt:v=>v.toFixed(1)+'%',tip:'Trigger sensitivity for Audio mode, 0 to 100%. Higher means a quieter signal triggers (threshold from -6 dBFS at 0% down to -60 dBFS at 100%). Our scale.',cls:'h'});top2.appendChild(g);
+ const o=el('div','grp');o.id='offGrp';knob(o,{id:'s.offset',label:'Offset',size:28,fmt:v=>(v*100).toFixed(0)+'%',tip:'Host Sync offset: shifts the trigger inside the grid step. 50% on the 1/4 grid gives the classic offbeat pump. Our addition.',cls:'h'});top2.appendChild(o);
+ const l=el('div','grp');l.innerHTML='<span class="cap">Trigger</span>';const lamp=el('span','pwr');lamp.style.cssText='width:11px;height:11px;border-radius:50%;background:#2a2c33;display:inline-block;box-shadow:inset 0 0 2px #000';lamp.dataset.tip='Flashes every time the envelope is triggered.';l.appendChild(lamp);top2.appendChild(l);window.__lamp=lamp}
+{const g=el('div','grp');g.style.marginLeft='auto';g.innerHTML='<span class="cap">Filter type</span>';radios(g,'s.ftype',['Digital','Notch','Steep'],['Digital: the two EQ points are normal peaking filters on the trigger signal. Our interpretation.','Notch: each EQ point cuts a narrow notch instead (its depth follows the gain value). Use it to remove a frequency from the trigger. Our interpretation.','Steep: each EQ point is doubled for twice the dB and a steeper edge. Our interpretation.']);top2.appendChild(g)}
+const p2g=el('div','p2g');p2.appendChild(p2g);
+const mkSide=(id,key,title,tipM,gid,gtip)=>{const c=el('div','sidecol');c.innerHTML='<div class="cap">'+title+'</div>';const cv=el('canvas','cv');cv.dataset.tip=tipM;c.appendChild(cv);const g=hd(cv,98,170,true);knob(c,{id:gid,label:title+' Gain',size:48,fmt:v=>fDb(v),tip:gtip});p2g.appendChild(c);return{cv,g,key}};
+const mIn=mkSide('in','in','Input','Level of the trigger signal after Input Gain, left and right, in dB. Blue is safe, purple is the warning zone, pink is clipping.','s.inG','Input gain in dB for the trigger signal and the audio. Range -24 to +24 dB.');
+const cvS=el('canvas','cv');cvS.style.touchAction='none';cvS.dataset.tip='Main display. Left: the spectrum of the trigger signal with two draggable EQ points (what the trigger hears). Right: the envelope shapes for the low and high band. Drag points to edit. Choose what is shown with the buttons underneath.';
+p2g.insertBefore(cvS,p2g.children[1]);const SW=920,SH=284,gS=hd(cvS,SW,SH,true);
+const mOut=mkSide('out','out','Output','Level of the audio after ducking and Output Gain, left and right, in dB. Blue is safe, purple is the warning zone, pink is clipping.','s.outG','Output gain in dB after the ducking. Range -24 to +24 dB.');
+const views=el('div','p2views');p2.appendChild(views);
+const VL=['FFT','Low','Hi','FFT | Hi','FFT | Low','Low | Hi','FFT | Low/Hi','Low | Hi | FFT','System'],VT=['Show only the spectrum and EQ.','Show only the low band envelope.','Show only the high band envelope.','Spectrum and high envelope side by side.','Spectrum and low envelope side by side.','Low and high envelope side by side.','Spectrum on the left, low envelope over high envelope on the right.','Low, high and spectrum in three columns.','System view: trigger monitor and status.'];
+VL.forEach((t,i)=>{const b=el('button','tgb',t);b.dataset.tip=VT[i];b.onclick=()=>setP('s.view',i,true);views.appendChild(b);ctls.push({refresh(){b.classList.toggle('on',st['s.view']===i);b.classList.toggle('yel',true)}})});
+{const sp=el('div','sp');views.appendChild(sp);const c=el('span','cap','Grid');views.appendChild(c);seg(views,'s.grid',['1/16','1/8','1/4','1/2'],['Beat grid 1/16: lines and snapping every 1/16 note. In Host Sync it is also the trigger rate (our choice).','Beat grid 1/8.','Beat grid 1/4: one line per beat. In Host Sync the envelope restarts every beat.','Beat grid 1/2: every two beats.']);
+ const c2=el('span','cap','Span');c2.style.marginLeft='6px';views.appendChild(c2);selectBox(views,'s.span',['Auto','1 beat','2 beats','4 beats'],'Time shown in the envelope displays. Auto picks the smallest span that fits the envelope. At 150 BPM one beat is 400 ms.')}
+const p2b=el('div','p2bot');p2.appendChild(p2b);
+const bx1=el('div','box');bx1.innerHTML='<h4>Multiband options</h4>';p2b.appendChild(bx1);
+{const r=el('div','');r.style.cssText='display:flex;gap:10px;align-items:flex-start;margin-top:4px';bx1.appendChild(r);
+ knob(r,{id:'s.split',label:'Split Freq',size:58,fmt:fHz,tip:'Split frequency between the low band and the high band (Linkwitz-Riley, 24 dB per octave). Everything below is ducked by the Low Envelope, everything above by the High Envelope. Also draggable in the spectrum.'});
+ const lw=el('div','');lw.style.cssText='display:flex;flex-direction:column;gap:4px;padding-top:2px';lw.innerHTML='<span class="cap">Listen</span>';radios(lw,'s.listen',['All Bands','Low Env','High Env'],['Hear both bands (normal).','Hear only the low band, to tune its envelope.','Hear only the high band, to tune its envelope.']);r.appendChild(lw);
+ const r2=el('div','');r2.style.cssText='display:flex;gap:14px;margin-top:10px;justify-content:space-around';bx1.appendChild(r2);
+ knob(r2,{id:'s.lowVol',label:'Low Vol',size:50,fmt:v=>fDb(v),tip:'Level of the low band after ducking, -24 to +6 dB.'});knob(r2,{id:'s.hiVol',label:'High Vol',size:50,fmt:v=>fDb(v),tip:'Level of the high band after ducking, -24 to +6 dB.'})}
+const bx2=el('div','box');p2b.appendChild(bx2);
+const ENVTIP={Str:'Strength: how deep the band is ducked at the trigger. 100% goes to silence, 50% to half the level.',Atk:'Attack time: how long the band takes to go down after the trigger. 0 ms is instant (we ramp over a fraction of a millisecond to avoid clicks).',AtkC:'Attack curve: bends the attack. Above 0 it ducks quickly at first, below 0 it ducks slowly at first.',Hold:'Hold: how long the band stays fully ducked before it recovers.',Rel:'Release time: how long the band takes to come back to full level.',RelC:'Release curve: bends the recovery. Above 0 it comes back quickly at first and eases in at the end, below 0 it stays down longer and snaps back.'};
+['l','h'].forEach((k,i)=>{const nm=i?'High':'Low';const h=el('h4',''),r=el('div','envrow');h.textContent=nm+' envelope';h.style.color=i?'#FF7BB1':'#FFA600';h.style.marginTop=i?'2px':'0';if(i){const lk=el('button','tgb','Link');lk.style.cssText='position:absolute;left:50%;transform:translateX(-50%);margin-top:-20px';lk.dataset.tip='Link: low and high envelopes move together. Turning a knob on one copies the value to the other.';lk.onclick=()=>{setP('s.link',st['s.link']?0:1,true)};bx2.appendChild(lk);ctls.push({refresh(){lk.classList.toggle('on',!!st['s.link'])}})}
+ bx2.appendChild(h);bx2.appendChild(r);const c=i?'#FF7BB1':'#FFA600';
+ knob(r,{id:'s.'+k+'Str',label:'Strength',size:46,color:c,fmt:fPct,tip:ENVTIP.Str});
+ knob(r,{id:'s.'+k+'Atk',label:'Atk',size:40,color:c,fmt:v=>v.toFixed(2)+' ms',tip:ENVTIP.Atk});
+ knob(r,{id:'s.'+k+'AtkC',label:'Curve Atk',size:32,color:c,fmt:v=>(v>0?'+':'')+v.toFixed(0)+'%',tip:ENVTIP.AtkC});
+ knob(r,{id:'s.'+k+'Hold',label:'Hold',size:46,color:c,fmt:fMs,tip:ENVTIP.Hold});
+ knob(r,{id:'s.'+k+'Rel',label:'Rel',size:40,color:c,fmt:fMs,tip:ENVTIP.Rel});
+ knob(r,{id:'s.'+k+'RelC',label:'Curve Rel',size:32,color:c,fmt:v=>(v>0?'+':'')+v.toFixed(0)+'%',tip:ENVTIP.RelC})});
+const bx3=el('div','box');p2b.appendChild(bx3);
+{const g=el('div','eqcols');g.style.marginTop='2px';bx3.appendChild(g);[1,2].forEach(n=>{const c=el('div','');c.style.cssText='display:flex;flex-direction:column;align-items:center;gap:0';c.innerHTML='<h4 style="margin:0 0 2px">EQ'+n+'</h4>';g.appendChild(c);
+ knob(c,{id:'s.e'+n+'f',label:'Freq',size:36,fmt:fHz,tip:'EQ'+n+' frequency on the trigger signal. Also draggable as a point in the spectrum.'});
+ knob(c,{id:'s.e'+n+'g',label:'Gain',size:36,fmt:v=>fDb(v),tip:'EQ'+n+' gain on the trigger signal, -18 to +18 dB. Boost a frequency to make the trigger react to it more, cut one to ignore it. The audio itself is not changed.'});
+ knob(c,{id:'s.e'+n+'w',label:'Width',size:36,fmt:v=>'Q '+v.toFixed(1),tip:'EQ'+n+' width as Q: low numbers are wide, high numbers are narrow. 0.2 to 12. Scroll over the point in the spectrum to change it.'})})}
+/* ---- view layout ---- */
+function panels(){const v=st['s.view'],W=SW,H=SH,gap=6,P=(k,x,y,w,h,e)=>({k,x,y,w,h,e});
+ switch(v){case 0:return[P('fft',0,0,W,H)];case 1:return[P('env',0,0,W,H,0)];case 2:return[P('env',0,0,W,H,1)];
+  case 3:{const w=(W-gap)/2;return[P('fft',0,0,w,H),P('env',w+gap,0,w,H,1)]}case 4:{const w=(W-gap)/2;return[P('fft',0,0,w,H),P('env',w+gap,0,w,H,0)]}
+  case 5:{const w=(W-gap)/2;return[P('env',0,0,w,H,0),P('env',w+gap,0,w,H,1)]}
+  case 6:{const w=(W-gap)/2,h=(H-gap)/2;return[P('fft',0,0,w,H),P('env',w+gap,0,w,h,0),P('env',w+gap,h+gap,w,h,1)]}
+  case 7:{const w=(W-2*gap)/3;return[P('env',0,0,w,H,0),P('env',w+gap,0,w,H,1),P('fft',2*(w+gap),0,w,H)]}
+  default:return[P('sys',0,0,W,H)]}}
+const EC=['#FFA600','#FF7BB1'];
+const EID=e=>e?'h':'l';
+function envOf(e){const k='s.'+EID(e);return{str:st[k+'Str']/100,atk:st[k+'Atk'],hold:st[k+'Hold'],rel:st[k+'Rel'],ac:st[k+'AtkC'],rc:st[k+'RelC']}}
+function spanMs(){const s=st['s.span'];if(s>0)return [0,1,2,4][s]*SPB*1000;const need=Math.max(0,1,2).constructor&&Math.max(envOf(0).atk+envOf(0).hold+envOf(0).rel,envOf(1).atk+envOf(1).hold+envOf(1).rel);const b=need/(SPB*1000)*1.08;return (b<=1?1:b<=2?2:4)*SPB*1000}
+const gridMs=()=>[.25,.5,1,2][st['s.grid']]*SPB*1000;
+const EQY=(g,iy,ih)=>iy+(18-clamp(g,-18,18))/36*ih;
+function plotBox(p){if(p.k==='fft')return{ix:p.x+38,iy:p.y+8,iw:p.w-38-30,ih:p.h-8-16};if(p.k==='env')return{ix:p.x+44,iy:p.y+18,iw:p.w-44-10,ih:p.h-18-16};return{ix:p.x+10,iy:p.y+10,iw:p.w-20,ih:p.h-20}}
+function eqResp(f){const fs=eng.fs;let m=1;for(const a of eng.scEq)for(const q of a)m*=q.mag(fs,f);return 20*Math.log10(m+1e-9)}
+function drawFFTPanel(g,p){const{ix,iy,iw,ih}=plotBox(p),fs=eng.fs;g.save();g.beginPath();g.rect(p.x,p.y,p.w,p.h);g.clip();
+ g.fillStyle=T.disp;g.fillRect(p.x,p.y,p.w,p.h);g.font='9px JetBrains Mono,monospace';g.lineWidth=1;
+ [18,12,6,0,-6,-12,-18].forEach(d=>{const y=EQY(d,iy,ih);g.strokeStyle=d===0?'#4a4d55':T.line;g.beginPath();g.moveTo(ix,y);g.lineTo(ix+iw,y);g.stroke();g.fillStyle=T.dim;g.textAlign='right';g.fillText((d>0?'+':'')+d+'dB',ix-3,y+3)});
+ const FL=[50,100,200,400,800,1600,3200,6400,12800];FL.forEach(f=>{const x=fx(f,ix,iw);g.strokeStyle=T.line;g.beginPath();g.moveTo(x,iy);g.lineTo(x,iy+ih);g.stroke();g.fillStyle=T.dim;g.textAlign='center';g.fillText(f>=1000?(f/1000)+'k':f,x,p.y+p.h-4)});
+ g.textAlign='left';[-80,-60,-40,-20].forEach(d=>{const y=iy+ih-(clamp(d,-96,-6)+96)/90*ih;g.fillStyle=T.dim;g.fillText(d,ix+iw+3,y+3);g.fillRect(ix+iw,y,2,1)});g.fillText('dBFS',ix+iw+2,iy+8);
+ const sx=fx(st['s.split'],ix,iw);g.fillStyle='rgba(255,123,177,.09)';g.fillRect(sx,iy,ix+iw-sx,ih);g.fillStyle='rgba(255,166,0,.07)';g.fillRect(ix,iy,sx-ix,ih);
+ specPath(g,eng.sp.feed,fs,ix,ix+iw,d=>iy+ih-(clamp(d,-96,-6)+96)/90*ih);g.lineTo(ix+iw,iy+ih);g.lineTo(ix,iy+ih);g.closePath();g.fillStyle='rgba(200,204,214,.16)';g.fill();specPath(g,eng.sp.feed,fs,ix,ix+iw,d=>iy+ih-(clamp(d,-96,-6)+96)/90*ih);g.strokeStyle='rgba(215,218,226,.9)';g.lineWidth=1.1;g.stroke();
+ g.strokeStyle='#e8c340';g.lineWidth=2;g.beginPath();for(let x=0;x<=iw;x+=3){const f=xf(ix+x,ix,iw);const d=eqResp(f);x?g.lineTo(ix+x,EQY(d,iy,ih)):g.moveTo(ix+x,EQY(d,iy,ih))}g.stroke();
+ [[1,'#e8c340'],[2,'#e8c340']].forEach(([n,c])=>{const x=fx(st['s.e'+n+'f'],ix,iw),y=EQY(st['s.e'+n+'g'],iy,ih);g.fillStyle='#2a2f55';g.strokeStyle='#fff';g.lineWidth=1.5;g.beginPath();g.arc(x,y,6,0,7);g.fill();g.stroke();g.fillStyle='#fff';g.font='700 9px Barlow Condensed,sans-serif';g.textAlign='center';g.fillText(n,x,y+3)});
+ g.strokeStyle='#fff';g.setLineDash([4,3]);g.lineWidth=1;g.beginPath();g.moveTo(sx,iy);g.lineTo(sx,iy+ih);g.stroke();g.setLineDash([]);g.fillStyle='#fff';g.beginPath();g.moveTo(sx-5,iy);g.lineTo(sx+5,iy);g.lineTo(sx,iy+7);g.fill();
+ g.font='700 10px Barlow Condensed,sans-serif';g.textAlign=sx>ix+iw-90?'right':'left';g.fillStyle=T.title;g.fillText('Split '+fHz(st['s.split']),sx+(sx>ix+iw-90?-6:6),iy+16);
+ g.fillStyle='#FFA600';g.textAlign='left';g.fillText('LOW',ix+4,iy+12);g.fillStyle='#FF7BB1';g.textAlign='right';g.fillText('HIGH',ix+iw-4,iy+12);
+ g.strokeStyle=T.line;g.strokeRect(ix,iy,iw,ih);g.restore()}
+function drawEnvPanel(g,p){const{ix,iy,iw,ih}=plotBox(p),sm=spanMs();g.save();g.beginPath();g.rect(p.x,p.y,p.w,p.h);g.clip();g.fillStyle=T.disp;g.fillRect(p.x,p.y,p.w,p.h);g.font='9px JetBrains Mono,monospace';g.lineWidth=1;
+ const Y=d=>iy+(-clamp(d,-30,0))/30*ih,X=t=>ix+t/sm*iw;
+ [0,-3,-6,-12,-18,-24].forEach(d=>{g.strokeStyle=d===0?'#4a4d55':T.line;g.beginPath();g.moveTo(ix,Y(d));g.lineTo(ix+iw,Y(d));g.stroke();g.fillStyle=T.dim;g.textAlign='right';g.fillText(d+'dB',ix-3,Y(d)+3)});
+ const gm=gridMs();for(let t=0;t<=sm+1;t+=gm){g.strokeStyle=T.line;g.beginPath();g.moveTo(X(t),iy);g.lineTo(X(t),iy+ih);g.stroke()}
+ g.textAlign='center';[['1/16',.25],['1/8',.5],['1/4',1],['1/2',2]].forEach(([t,b])=>{const ms=b*SPB*1000;if(ms<=sm){g.fillStyle=T.title;g.fillText(t,X(ms),p.y+11);g.strokeStyle='#4a4d55';g.beginPath();g.moveTo(X(ms),iy);g.lineTo(X(ms),iy+ih);g.stroke()}});
+ [0,.25,.5,.75,1].forEach(f=>{g.fillStyle=T.dim;g.textAlign=f===0?'left':f===1?'right':'center';g.fillText(Math.round(sm*f)+(f===1?' ms':''),ix+f*iw,p.y+p.h-4)});
+ const fs=eng.fs,curve=(e,col,al,fill)=>{const en=envOf(e),E={str:en.str,atk:en.atk*.001*fs,hold:en.hold*.001*fs,rel:en.rel*.001*fs,ac:en.ac,rc:en.rc};g.beginPath();g.moveTo(X(0),Y(0));const stp=Math.max(1,Math.floor(iw/300));let prevg=1;
+  g.lineTo(X(0),Y(0));for(let x=0;x<=iw;x+=1){const t=x/iw*sm,gg=Engine.envGain(E,Math.max(0,t)*.001*fs-(x===0?-1:0));const d=20*Math.log10(Math.max(gg,.0316));x?g.lineTo(ix+x,Y(d)):g.lineTo(ix,Y(Math.min(0,20*Math.log10(Math.max(Engine.envGain(E,0.5),.0316)))))}
+  if(fill){g.lineTo(ix+iw,Y(0));g.closePath();g.fillStyle=hex2rgba(col,al*.5);g.fill()}g.strokeStyle=hex2rgba(col,al);g.lineWidth=fill?2:1.2;g.beginPath();for(let x=0;x<=iw;x+=1){const t=x/iw*sm,gg=Engine.envGain(E,t*.001*fs);const d=20*Math.log10(Math.max(gg,.0316));x?g.lineTo(ix+x,Y(d)):g.moveTo(ix,Y(d))}g.stroke()};
+ const mine=p.e;curve(1-mine,EC[1-mine],.35,false);curve(mine,EC[mine],1,true);
+ /* live position marker */
+ const tn=eng.scT[mine]/fs*1000;if(tn<=sm&&eng.page[1]){const gg=Engine.envGain({str:envOf(mine).str,atk:envOf(mine).atk*.001*fs,hold:envOf(mine).hold*.001*fs,rel:envOf(mine).rel*.001*fs,ac:envOf(mine).ac,rc:envOf(mine).rc},eng.scT[mine]);g.strokeStyle='#fff';g.lineWidth=1;g.beginPath();g.moveTo(X(tn),iy);g.lineTo(X(tn),iy+ih);g.stroke();g.fillStyle='#fff';g.beginPath();g.arc(X(tn),Y(20*Math.log10(Math.max(gg,.0316))),3.5,0,7);g.fill()}
+ /* handles */
+ const en=envOf(mine),hs=envHandles(p);hs.forEach(h=>{g.fillStyle=h.t==='c'?'#6CC9F5':'#2a2f55';g.strokeStyle='#fff';g.lineWidth=1.3;g.beginPath();if(h.t==='c'){g.arc(h.x,h.y,4,0,7)}else g.rect(h.x-5,h.y-5,10,10);g.fill();g.stroke()});
+ g.font='italic 700 13px Barlow Condensed,sans-serif';g.fillStyle=hex2rgba(EC[mine],.55);g.textAlign='right';g.fillText((mine?'High':'Low')+' band envelope',ix+iw-6,iy+ih-8);
+ g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='left';g.fillText('Depth '+(20*Math.log10(Math.max(1-en.str,.0316))).toFixed(1)+' dB',ix+6,iy+ih-8);
+ g.strokeStyle=T.line;g.strokeRect(ix,iy,iw,ih);g.restore()}
+function envHandles(p){const{ix,iy,iw,ih}=plotBox(p),sm=spanMs(),e=envOf(p.e),X=t=>ix+t/sm*iw,Y=d=>iy+(-clamp(d,-30,0))/30*ih,dd=20*Math.log10(Math.max(1-e.str,.0316));
+ const cf=(x,c)=>Math.pow(clamp(x,0,1),Math.pow(2,-c/33));
+ const out=[{t:'a',x:X(e.atk),y:Y(dd)},{t:'h',x:X(e.atk+e.hold),y:Y(dd)},{t:'r',x:X(e.atk+e.hold+e.rel),y:Y(0)}];
+ out.push({t:'c',w:'rel',x:X(e.atk+e.hold+e.rel/2),y:Y(20*Math.log10(Math.max(1-e.str*(1-cf(.5,e.rc)),.0316)))});
+ if(e.atk>0.4)out.push({t:'c',w:'atk',x:X(e.atk/2),y:Y(20*Math.log10(Math.max(1-e.str*cf(.5,e.ac),.0316)))});
+ out.forEach(h=>h.p=p);return out}
+function drawSys(g,p){g.fillStyle=T.disp;g.fillRect(p.x,p.y,p.w,p.h);g.save();g.beginPath();g.rect(p.x,p.y,p.w,p.h);g.clip();g.font='13px Barlow Condensed,sans-serif';g.fillStyle=T.title;g.textAlign='left';g.fillText('SYSTEM VIEW: trigger monitor',16,26);
+ const lines=['Trigger mode: '+['Audio','MIDI','Host Sync'][st['s.trig']],'Sens threshold: '+eng.scThr.toFixed(1)+' dBFS','Grid: '+['1/16','1/8','1/4','1/2'][st['s.grid']]+' (Host Sync rate), offset '+(st['s.offset']*100).toFixed(0)+'%','Last trigger: '+(eng.scLast>0?((eng.tpos-eng.scLast)/eng.fs).toFixed(2)+' s ago':'none yet'),'Split: '+fHz(st['s.split'])+' (LR4)','Latency: none (page 2 has no lookahead)','Preview transport: 150 BPM'];
+ g.fillStyle=T.ink;lines.forEach((t,i)=>g.fillText(t,16,52+i*18));
+ const bx=330,by=40,bw=p.w-bx-30,bh=p.h-90;g.strokeStyle=T.line;g.strokeRect(bx,by,bw,bh);g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='right';
+ [-6,-18,-30,-42,-54].forEach(d=>{const y=by+(-6-d)/54*bh;g.fillText(d+'',bx-4,y+3);g.beginPath();g.moveTo(bx,y);g.lineTo(bx+bw,y);g.stroke()});
+ g.textAlign='left';g.fillStyle=T.title;g.font='11px Barlow Condensed,sans-serif';g.fillText('Trigger level in dBFS (sidechain after EQ) and the Sens threshold',bx,by-6);
+ const ty=by+(-6-eng.scThr)/54*bh;g.strokeStyle='#FF1383';g.setLineDash([4,3]);g.beginPath();g.moveTo(bx,ty);g.lineTo(bx+bw,ty);g.stroke();g.setLineDash([]);
+ const hist=sysHist;g.strokeStyle='#02EBBA';g.lineWidth=1.4;g.beginPath();for(let k=0;k<hist.length;k++){const d=hist[(sysHi+k)%hist.length];const y=by+(-6-clamp(d,-54,-6))/54*bh;k?g.lineTo(bx+k/(hist.length-1)*bw,y):g.moveTo(bx,y)}g.stroke();
+ g.restore()}
+const sysHist=new Float32Array(300).fill(-60);let sysHi=0;
+function drawS(){const g=gS,ps=panels();g.fillStyle=T.disp;g.fillRect(0,0,SW,SH);ps.forEach(p=>{if(p.k==='fft')drawFFTPanel(g,p);else if(p.k==='env')drawEnvPanel(g,p);else drawSys(g,p)})}
+/* ---- display interaction ---- */
+let sdrag=null,shover=null;
+function sPos(e){const r=cvS.getBoundingClientRect(),sc=curScale();return[(e.clientX-r.left)/sc-1,(e.clientY-r.top)/sc-1]}
+function sHit(m){for(const p of panels()){if(m[0]<p.x||m[0]>p.x+p.w||m[1]<p.y||m[1]>p.y+p.h)continue;
+ if(p.k==='fft'){const{ix,iy,iw,ih}=plotBox(p);for(const n of[1,2]){const x=fx(st['s.e'+n+'f'],ix,iw),y=EQY(st['s.e'+n+'g'],iy,ih);if(Math.hypot(m[0]-x,m[1]-y)<10)return{t:'eq',n,p}}
+  const sx=fx(st['s.split'],ix,iw);if(Math.abs(m[0]-sx)<6&&m[1]>iy&&m[1]<iy+ih)return{t:'split',p}}
+ else if(p.k==='env'){for(const h of envHandles(p)){if(Math.hypot(m[0]-h.x,m[1]-h.y)<9)return{t:'env',h,p}}}}
+ return{t:null}}
+cvS.addEventListener('pointerdown',e=>{const h=sHit(sPos(e));if(!h.t)return;sdrag=h;cvS.setPointerCapture(e.pointerId);e.preventDefault()});
+const linkSet=(k,id,v)=>{setP('s.'+k+id,v,true)};
+cvS.addEventListener('pointermove',e=>{const m=sPos(e);if(!sdrag){const h=sHit(m);cvS.style.cursor=h.t==='split'?'ew-resize':h.t?'grab':'default';return}
+ const h=sdrag,p=h.p,b=plotBox(p);
+ if(h.t==='eq'){const n=h.n;setP('s.e'+n+'f',xf(clamp(m[0],b.ix,b.ix+b.iw),b.ix,b.iw),true);const d=18-(m[1]-b.iy)/b.ih*36;setP('s.e'+n+'g',Math.abs(d)<.4?0:clamp(d,-18,18),true)}
+ else if(h.t==='split'){setP('s.split',xf(clamp(m[0],b.ix,b.ix+b.iw),b.ix,b.iw),true)}
+ else if(h.t==='env'){const k=EID(p.e),sm=spanMs(),e0=envOf(p.e);let t=(m[0]-b.ix)/b.iw*sm;const gm=gridMs();const sn=Math.round(t/gm)*gm;if(!e.shiftKey&&Math.abs(sn-t)/sm*b.iw<7)t=sn;t=Math.max(0,t);
+  const dBy=-clamp((m[1]-b.iy)/b.ih*30,0,30),gain=Math.pow(10,dBy/20);
+  if(h.h.t==='a'){linkSet(k,'Atk',clamp(t,0,200));linkSet(k,'Str',clamp((1-gain)*100,0,100))}
+  else if(h.h.t==='h'){linkSet(k,'Hold',clamp(t-e0.atk,0,2000));linkSet(k,'Str',clamp((1-gain)*100,0,100))}
+  else if(h.h.t==='r'){linkSet(k,'Rel',clamp(t-e0.atk-e0.hold,1,4000))}
+  else if(h.h.t==='c'){const s=Math.max(e0.str,.05);if(h.h.w==='rel'){const cfv=clamp(1-(1-gain)/s,.002,.998);linkSet(k,'RelC',clamp(-33*Math.log2(Math.log(cfv)/Math.log(.5)),-100,100))}else{const cfv=clamp((1-gain)/s,.002,.998);linkSet(k,'AtkC',clamp(-33*Math.log2(Math.log(cfv)/Math.log(.5)),-100,100))}}}});
+cvS.addEventListener('pointerup',()=>sdrag=null);cvS.addEventListener('pointercancel',()=>sdrag=null);
+cvS.addEventListener('wheel',e=>{const h=sHit(sPos(e));if(h.t==='eq'){e.preventDefault();setP('s.e'+h.n+'w',st['s.e'+h.n+'w']*(e.deltaY<0?1.12:1/1.12),true)}},{passive:false});
+cvS.addEventListener('dblclick',e=>{const h=sHit(sPos(e));if(h.t==='eq'){setP('s.e'+h.n+'g',0,true);setP('s.e'+h.n+'w',1,true)}else if(h.t==='split')setP('s.split',1050,true)});
+/* ---- side meters ---- */
+const clip2={in:[0,0],out:[0,0]};
+function drawSide(m,l,r){const g=m.g,w=98,h=170,mn=-60,mx=6,Y=d=>h-8-(clamp(d,mn,mx)-mn)/(mx-mn)*(h-14);g.fillStyle=T.disp;g.fillRect(0,0,w,h);const grad=meterColor(g,Y(mn),Y(mx),mn,mx);g.fillStyle=T.dim;g.font='9px JetBrains Mono,monospace';g.textAlign='right';
+ for(const t of[6,0,-6,-12,-24,-36,-48]){g.fillRect(20,Y(t),3,1);g.fillText(String(t),18,Y(t)+3)}
+ [l,r].forEach((pk,k)=>{const d=L2D(pk),x=28+k*30;g.fillStyle=grad;g.fillRect(x,Y(d),22,Y(mn)-Y(d));if(d>=0)clip2[m.key][k]=1;g.fillStyle=clip2[m.key][k]?'#FF1383':'#2a2c33';g.fillRect(x,0,22,4)});g.fillStyle=T.dim;g.textAlign='center';g.fillText('L',39,h);g.fillText('R',69,h)}
+mIn.cv.onclick=()=>clip2.in=[0,0];mOut.cv.onclick=()=>clip2.out=[0,0];
+function coreS(){return{on:!!st['s.on'],trig:st['s.trig'],sens:st['s.sens'],ftype:st['s.ftype'],inG:st['s.inG'],outG:st['s.outG'],split:st['s.split'],listen:st['s.listen'],lowVol:st['s.lowVol'],hiVol:st['s.hiVol'],
+ lStr:st['s.lStr'],lAtk:st['s.lAtk'],lAtkC:st['s.lAtkC'],lHold:st['s.lHold'],lRel:st['s.lRel'],lRelC:st['s.lRelC'],hStr:st['s.hStr'],hAtk:st['s.hAtk'],hAtkC:st['s.hAtkC'],hHold:st['s.hHold'],hRel:st['s.hRel'],hRelC:st['s.hRelC'],
+ e1f:st['s.e1f'],e1g:st['s.e1g'],e1w:st['s.e1w'],e2f:st['s.e2f'],e2g:st['s.e2g'],e2w:st['s.e2w'],grid:st['s.grid'],offset:st['s.offset'],feed:+$('#rigFeed').value}}
+
+/* ============ Presets: two banks, one per page. Page 1 values are our own starting points. ============ */
+const TYPES=[['Master','Bus','Kick','Bass','Creative','Utility'],['Pump','Duck','Gate','Creative','Utility']];
+const rOf=r=>!isFinite(r)?1:1-1/r;
+function MB(name,type,tags,g,bs){const p={'m.on':1};const G={bands:'m.bands',mix:'m.mix',ceil:'m.ceil',limOn:'m.limOn',inG:'m.inG',outG:'m.outG'};for(const k in g){if(G[k])p[G[k]]=g[k]}
+ if(g.slope)p['m.slope']=SLOPES.indexOf(g.slope);if(g.x)g.x.forEach((v,i)=>p['m.x'+(i+1)]=v);
+ const pi={};(bs||[]).forEach((o,i)=>{const b='b'+i+'.';if(!o)return;for(const k in o){const v=o[k];if(k==='r')p[b+'rat']=rOf(v);else if(k==='pat'){p[b+'patI']=v;p[b+'dOn']=1;pi[i]=v}else if(k==='str')p[b+'dStr']=v;else p[b+k]=v}});
+ return{name,type,tags,page:0,p,factory:true}}
+const THR=(t,r,a,l,o)=>Object.assign({thr:t,r,atk:a,rel:l},o||{});
+const FACT=[[],[]];
+FACT[0]=[
+ MB('Start Here','Utility',['start','general'],{bands:4,slope:36,x:[110,500,5000],mix:50},[THR(-18,2,30,150),THR(-18,2,20,120),THR(-18,2,12,100),THR(-18,2,6,80)]),
+ (()=>{const p=MB('Trance Master 2','Master',['trance','master'],{bands:4,slope:24,x:[113,1374,8152],mix:75},[THR(-28,4.74,0.5,3.09,{on:0,knee:0,lRel:0.5}),THR(-25,4.60,40,0.5,{knee:0,lRel:50}),THR(-24,2.83,15.2,0.5,{knee:0,lRel:50}),THR(-25,5.75,10.7,38.86,{knee:0,lRel:50})]);p.p['m.fft']=2;return p})(),
+ MB('Hardstyle Kick Bus Glue','Kick',['hardstyle','kick','glue'],{bands:3,slope:24,x:[80,3500],mix:70},[THR(-14,4,30,80,{boost:1,knee:0}),THR(-16,3,10,100),THR(-18,2,4,60)]),
+ MB('Bass Tight','Bass',['bass','tight'],{bands:2,slope:48,x:[150],mix:100},[THR(-20,5,10,60,{boost:2,knee:0}),{cOn:0,lOn:0}]),
+ MB('Telephone','Creative',['telephone','filter','lofi'],{bands:3,slope:96,x:[300,3100],mix:100},[{mute:1},THR(-24,4,5,60,{boost:3}),{mute:1}]),
+ MB('Master Glue','Master',['master','glue','gentle'],{bands:3,slope:24,x:[120,3000],mix:100,limOn:1,ceil:-0.5},[THR(-14,1.5,30,.5,{lOn:0}),THR(-14,1.8,30,.5,{lOn:0}),THR(-14,1.5,20,.5,{lOn:0})]),
+ MB('Offbeat Pumper','Creative',['offbeat','pump','dpc'],{bands:3,slope:36,x:[120,2500],mix:100},[THR(-24,2,20,100,{pat:3,str:70}),THR(-24,2,20,100,{pat:3,str:45}),THR(-24,1.5,20,100)]),
+ MB('Kick Accentuator','Kick',['kick','punch','dpc'],{bands:3,slope:36,x:[100,4000],mix:100},[THR(-22,3,20,90,{pat:1,str:60}),THR(-24,2,20,90,{pat:1,str:30}),{cOn:0}]),
+ MB('Clean Parallel New York','Bus',['parallel','new york'],{bands:4,slope:36,x:[110,500,5000],mix:35},[THR(-30,6,5,80,{boost:6}),THR(-30,6,4,70,{boost:6}),THR(-30,6,3,60,{boost:6}),THR(-30,6,2,50,{boost:6})]),
+ MB('Hihat Rider','Creative',['hats','dpc','groove'],{bands:4,slope:36,x:[110,500,5000],mix:100},[{cOn:0},{cOn:0},THR(-26,2,10,100,{pat:4,str:35}),THR(-26,2,6,80,{pat:4,str:60})]),
+ MB('Sizzle Tamer','Utility',['hats','sibilance'],{bands:4,slope:36,x:[120,600,6500],mix:100},[{cOn:0,lOn:0},{cOn:0,lOn:0},{cOn:0,lOn:0},THR(-22,4,1,40,{lOut:-1})]),
+ MB('Loudness Push','Master',['loud','master'],{bands:4,slope:36,x:[100,450,4800],mix:100,ceil:-0.4},[THR(-20,3,20,120,{boost:3}),THR(-20,3,15,100,{boost:3}),THR(-20,3,8,80,{boost:3}),THR(-20,3,4,60,{boost:3})]),
+ MB('Lead Tamer','Bus',['lead','mids'],{bands:3,slope:24,x:[250,4500],mix:100},[{cOn:0},THR(-26,4,8,90,{knee:1}),THR(-24,3,3,60)]),
+ MB('Low End Control','Bass',['sub','low end'],{bands:2,slope:48,x:[90],mix:100},[THR(-26,6,15,70,{boost:1,lOut:-1}),THR(-14,1.5,30,150,{lOn:0})]),
+ MB('Wide Open Glue','Bus',['soft knee','glue'],{bands:4,slope:36,x:[110,500,5000],mix:100},[THR(-16,1.8,40,.5,{knee:1}),THR(-16,1.8,35,.5,{knee:1}),THR(-16,1.8,30,.5,{knee:1}),THR(-16,1.8,25,.5,{knee:1})]),
+ MB('Squash And Release','Creative',['heavy','squash'],{bands:4,slope:48,x:[100,450,4500],mix:55},[THR(-34,10,2,60,{boost:6}),THR(-34,10,1.5,50,{boost:6}),THR(-34,10,1,40,{boost:6}),THR(-34,10,.5,30,{boost:6})]),
+ MB('Single Band Limiter','Utility',['limiter','1 band'],{bands:1,slope:36,mix:100},[THR(-10,20,5,100,{lOn:1,lOut:-0.3})]),
+ MB('Hands Up Glue','Bus',['hands up','glue','dpc'],{bands:4,slope:12,x:[100,400,8000],mix:100},[THR(-22,7.35,40,15,{pat:1,str:50,sel:0}),THR(-24,3.31,10,5,{pat:2,str:50,sel:1}),THR(-28,Infinity,40,156,{pat:3,str:50,sel:2,lOut:-1}),THR(-26,4.4,10,.5,{pat:4,str:50,sel:3})]),
+ MB('Mono Bass Safe','Utility',['bass','mono-friendly'],{bands:2,slope:36,x:[120],mix:100},[THR(-22,4,12,70,{boost:1}),{cOn:0}])
+];
+function SC(name,type,tags,o){const p={'s.on':1};for(const k in o)p['s.'+k]=o[k];return{name,type,tags,page:1,p,factory:true}}
+const ENV=(l,h)=>{const o={};for(const k in l)o['l'+k]=l[k];for(const k in h)o['h'+k]=h[k];return o};
+FACT[1]=[
+ SC('Offbeat Pumper','Pump',['offbeat','host sync'],Object.assign({trig:2,grid:2,offset:.5,split:1050},ENV({Str:92,Atk:0,AtkC:0,Hold:4,Rel:600,RelC:33},{Str:52,Atk:0,AtkC:0,Hold:20,Rel:300,RelC:33}))),
+ SC('Default','Utility',['start'],Object.assign({trig:2,grid:2,offset:0,split:3041},ENV({Str:81,Atk:0,AtkC:0,Hold:74,Rel:395,RelC:-13},{Str:100,Atk:0,AtkC:0,Hold:1,Rel:427,RelC:-19}))),
+ SC('Kick Duck Low Only','Duck',['kick','bass','audio'],Object.assign({trig:0,sens:60,split:250,feed:0},ENV({Str:90,Atk:0,AtkC:0,Hold:30,Rel:220,RelC:40},{Str:0,Atk:0,AtkC:0,Hold:0,Rel:100,RelC:0}))),
+ SC('Hardstyle Rumble','Pump',['hardstyle','rumble','host sync'],Object.assign({trig:2,grid:2,offset:.5,split:180},ENV({Str:100,Atk:0,AtkC:0,Hold:20,Rel:230,RelC:50},{Str:35,Atk:0,AtkC:0,Hold:10,Rel:120,RelC:20}))),
+ SC('Trance Gate','Gate',['trance','gate','1/16'],Object.assign({trig:2,grid:0,offset:0,split:600},ENV({Str:100,Atk:0,AtkC:0,Hold:40,Rel:50,RelC:-30},{Str:100,Atk:0,AtkC:0,Hold:40,Rel:50,RelC:-30}))),
+ SC('Four On Floor Pump','Pump',['house','trance','audio'],Object.assign({trig:0,sens:55,split:800,feed:0},ENV({Str:75,Atk:0,AtkC:0,Hold:10,Rel:260,RelC:35},{Str:60,Atk:0,AtkC:0,Hold:10,Rel:240,RelC:35}))),
+ SC('Sidechain Bass Only','Duck',['bass'],Object.assign({trig:0,sens:60,split:250,feed:0},ENV({Str:100,Atk:0,AtkC:0,Hold:20,Rel:180,RelC:30},{Str:10,Atk:0,AtkC:0,Hold:0,Rel:100,RelC:0}))),
+ SC('Pad Breather','Pump',['pad','soft'],Object.assign({trig:2,grid:2,offset:0,split:1200},ENV({Str:45,Atk:20,AtkC:-20,Hold:0,Rel:600,RelC:40},{Str:45,Atk:20,AtkC:-20,Hold:0,Rel:600,RelC:40}))),
+ SC('Lead Duck Soft','Duck',['lead','kick'],Object.assign({trig:0,sens:55,split:700,feed:0},ENV({Str:20,Atk:0,AtkC:0,Hold:10,Rel:150,RelC:20},{Str:55,Atk:0,AtkC:0,Hold:10,Rel:180,RelC:30}))),
+ SC('Half Time Pump','Pump',['half time'],Object.assign({trig:2,grid:3,offset:0,split:900},ENV({Str:85,Atk:0,AtkC:0,Hold:50,Rel:700,RelC:30},{Str:60,Atk:0,AtkC:0,Hold:30,Rel:600,RelC:30}))),
+ SC('Rolling Bass Gap','Duck',['rolling bass','kick'],Object.assign({trig:0,sens:62,split:200,feed:0},ENV({Str:100,Atk:0,AtkC:0,Hold:5,Rel:110,RelC:10},{Str:0,Atk:0,AtkC:0,Hold:0,Rel:100,RelC:0}))),
+ SC('Eighth Stutter','Gate',['stutter','1/8'],Object.assign({trig:2,grid:1,offset:0,split:500},ENV({Str:100,Atk:0,AtkC:0,Hold:50,Rel:40,RelC:-40},{Str:100,Atk:0,AtkC:0,Hold:50,Rel:40,RelC:-40}))),
+ SC('Vocal Space Carver','Creative',['vocal','eq trigger'],Object.assign({trig:0,sens:50,split:2000,feed:1,e1f:2800,e1g:12,e1w:1.5},ENV({Str:15,Atk:5,AtkC:0,Hold:30,Rel:200,RelC:20},{Str:50,Atk:5,AtkC:0,Hold:30,Rel:200,RelC:20}))),
+ SC('MIDI Kick Link','Duck',['midi'],Object.assign({trig:1,split:300},ENV({Str:95,Atk:0,AtkC:0,Hold:20,Rel:200,RelC:35},{Str:40,Atk:0,AtkC:0,Hold:10,Rel:150,RelC:20}))),
+ SC('Notch Out The Bass','Creative',['notch','trigger filter'],Object.assign({trig:0,sens:60,ftype:1,e1f:60,e1g:-12,e1w:3,split:400,feed:1},ENV({Str:60,Atk:0,AtkC:0,Hold:20,Rel:180,RelC:20},{Str:60,Atk:0,AtkC:0,Hold:20,Rel:180,RelC:20})))
+];
+let userP=[];try{userP=JSON.parse(localStorage.getItem(KEY+'-presets')||'[]').filter(validPreset)}catch(e){userP=[]}
+const pageKeys=pg=>Object.keys(PS).filter(k=>PS[k].pg===pg);
+function validPreset(o){if(!o||typeof o!=='object'||typeof o.name!=='string'||!o.name||o.name.length>60||!o.p||typeof o.p!=='object'||(o.page!==0&&o.page!==1))return false;
+ for(const k in o.p){if(!(k in PS))continue;const v=o.p[k],p=PS[k];if(typeof v!=='number'||!isFinite(v)||v<p.min-1e-9||v>p.max+1e-9)return false}
+ if(o.pats!==undefined){if(!Array.isArray(o.pats)||o.pats.length>4)return false;for(const a of o.pats){if(!Array.isArray(a)||a.length<2||a.length>MAXN)return false;for(const q of a)if(!Array.isArray(q)||q.length!==2||!q.every(x=>typeof x==='number'&&isFinite(x)&&x>=0&&x<=1))return false}}return true}
+function normPreset(o){const p={};for(const k in o.p)if(k in PS&&PS[k].pg===o.page)p[k]=o.p[k];return{name:String(o.name).slice(0,60),type:TYPES[o.page].includes(o.type)?o.type:'Utility',tags:Array.isArray(o.tags)?o.tags.filter(t=>typeof t==='string').slice(0,8).map(t=>t.slice(0,20)):[],page:o.page,p,pats:o.pats,factory:false}}
+function saveUser(){try{localStorage.setItem(KEY+'-presets',JSON.stringify(userP))}catch(e){}}
+const curName=['Start Here','Offbeat Pumper'];let page=0;
+const allPresets=pg=>FACT[pg].concat(userP.filter(u=>u.page===pg));
+function curPreset(pg=page){return allPresets(pg).find(x=>x.name===curName[pg])||FACT[pg][0]}
+function applyPatsFromIdx(){for(let i=0;i<4;i++)pats[i]=PATS[st['b'+i+'.patI']].f()}
+function loadPreset(p){const pg=p.page;pageKeys(pg).forEach(k=>st[k]=DEF[k]);if(pg===0)for(let i=0;i<4;i++)pats[i]=PATS[0].f();
+ Object.assign(st,p.p);if(pg===0){if(p.pats){p.pats.forEach((a,i)=>pats[i]=a.map(q=>q.slice()))}else applyPatsFromIdx()}
+ if(pg===1)st['s.on']=1;if(pg===0)st['m.on']=1;curName[pg]=p.name;syncUI();toast('Loaded '+p.name)}
+function snapshot(pg){const p={};pageKeys(pg).forEach(k=>p[k]=st[k]);return p}
+function isDirty(){const c=curPreset(),pg=page,keys=pageKeys(pg);for(const k of keys){if(k==='m.on'||k==='s.on'||/view$|zoom$|\.fft$|\.vu$|\.span$/.test(k))continue;const base=(k in c.p)?c.p[k]:DEF[k];if(Math.abs(base-st[k])>1e-6)return true}
+ if(pg===0){const ref=c.pats?c.pats:[0,1,2,3].map(i=>PATS[(c.p['b'+i+'.patI']||0)].f());if(JSON.stringify(ref)!==JSON.stringify(pats))return true}return false}
+
+/* ============ Preview rig: synthesised loops (deterministic), 2 bars at 150 BPM ============ */
+const nz=i=>((Math.imul(i|0,1664525)+1013904223)>>>0)/2147483648-1;
+function pblep(t,dt){if(t<dt){t/=dt;return t+t-t*t-1}if(t>1-dt){t=(t-1)/dt;return t*t+t+t+1}return 0}
+let SRC=null,SRCFS=0;
+function renderSources(fs){const N=Math.round(8*SPB*fs),mk=()=>({L:new Float32Array(N),R:new Float32Array(N)});
+ const add=(b,t0,dur,fn,gl,gr)=>{const i0=Math.round(t0*fs),n=Math.round(dur*fs);for(let k=0;k<n;k++){const i=(i0+k)%N,v=fn(k/fs,k);b.L[i]+=v*gl;b.R[i]+=v*gr}};
+ const kickF=(t,k)=>{const ph=2*Math.PI*(46*t+154*(1-Math.exp(-45*t))/45),env=Math.exp(-t*6.5)*(1-Math.exp(-t*1500));return(Math.tanh(1.8*Math.sin(ph))/Math.tanh(1.8)*env+(t<.003?nz(k)*(1-t/.003)*.3:0))*.9};
+ const K=mk(),B=mk(),H=mk(),C=mk(),CH=mk(),LD=mk(),ev=[];
+ for(let b=0;b<8;b++){add(K,b*SPB,.4,kickF,1,1);ev.push(Math.round(b*SPB*fs))}
+ let lp=0;for(let b=0;b<8;b++){const t0=b*SPB+SPB/2;let ph=0;const dt=55/fs;add(B,t0,.19,(t,k)=>{ph+=dt;if(ph>=1)ph-=1;const s=2*ph-1-pblep(ph,dt);lp+=(s-lp)*.07;const env=Math.min(1,t/.004)*Math.min(1,(.19-t)/.02);return(lp*1.4+Math.sin(2*Math.PI*55*t)*.6)*env*.55},1,1)}
+ for(let b=0;b<16;b++){add(H,b*SPB/2+SPB/4,.08,(t,k)=>(nz(k*7+b)-nz(k*7+b-1))*Math.exp(-t*70)*.16,1,1)}
+ for(let b=1;b<8;b+=2)add(C,b*SPB,.25,(t,k)=>(nz(k*3+b)*Math.exp(-t*16)*.55+Math.sin(2*Math.PI*190*t)*Math.exp(-t*28)*.3)*.7,1,1);
+ const ch=[[57,60,64],[53,57,60],[60,64,67],[55,59,62]];ch.forEach((nt,c)=>{nt.forEach(m=>{for(let v=0;v<7;v++){const f=440*Math.pow(2,(m-69)/12)*Math.pow(2,(v-3)*.06/12*2);let ph=(v*.137)%1;const dt=f/fs,pan=(v-3)/3*.8;add(CH,c*2*SPB,2*SPB*.96,(t,k)=>{ph+=dt;if(ph>=1)ph-=1;const s=2*ph-1-pblep(ph,dt);const env=Math.min(1,t/.012)*Math.min(1,(2*SPB*.96-t)/.05)*(.55+.45*Math.exp(-t*3));return s*env*.05},Math.cos((pan+1)*Math.PI/4)*1.2,Math.sin((pan+1)*Math.PI/4)*1.2)}})});
+ const mel=[69,0,72,0,76,0,72,69,0,67,0,72,0,76,79,0,81,0,79,0,76,0,72,76,0,74,0,72,69,0,67,72];
+ mel.forEach((m,k)=>{if(!m)return;for(let v=0;v<5;v++){const f=440*Math.pow(2,(m-69)/12)*Math.pow(2,(v-2)*.07/12*2);let ph=(v*.21)%1;const dt=f/fs,pan=(v-2)/2*.7;add(LD,k*SPB/4,.3,(t,kk)=>{ph+=dt;if(ph>=1)ph-=1;const s=2*ph-1-pblep(ph,dt);return s*Math.min(1,t/.004)*Math.exp(-t*7)*.1},Math.cos((pan+1)*Math.PI/4),Math.sin((pan+1)*Math.PI/4))}});
+ const mix=(parts)=>{const o={L:new Float32Array(N),R:new Float32Array(N)};parts.forEach(([b,g])=>{for(let i=0;i<N;i++){o.L[i]+=b.L[i]*g;o.R[i]+=b.R[i]*g}});let pk=0;for(let i=0;i<N;i++)pk=Math.max(pk,Math.abs(o.L[i]),Math.abs(o.R[i]));const k=.8/(pk||1);for(let i=0;i<N;i++){o.L[i]*=k;o.R[i]*=k}return o};
+ const kfeed=new Float32Array(N);for(let i=0;i<N;i++)kfeed[i]=K.L[i];
+ SRC={mix:mix([[K,1],[B,.9],[H,.8],[C,.8],[CH,1],[LD,.6]]),kb:mix([[K,1],[B,1]]),lead:mix([[LD,1]]),drums:mix([[K,1],[H,1.2],[C,1]]),kfeed,ev,N};SRCFS=fs}
+let fileBuf=null,srcKind='mix';
+const blkL=new Float32Array(2048),blkR=new Float32Array(2048),fdL=new Float32Array(2048),fdR=new Float32Array(2048);
+const srcObj={fl:fdL,fr:fdR,ev:null,loopN:0};
+function fillSrc(n,L,R){const pos=eng.tpos;const fs=eng.fs;if(!SRC||SRCFS!==fs)renderSources(fs);const N=SRC.N;srcObj.ev=SRC.ev;srcObj.loopN=N;
+ const useFile=srcKind==='file'&&fileBuf,b=useFile?null:SRC[srcKind];
+ for(let i=0;i<n;i++){let l,r;if(useFile){const s=fileBuf[(pos+i)%fileBuf.length];l=r=s*.8}else{const k=(pos+i)%N;l=b.L[k];r=b.R[k]}L[i]=l;R[i]=r;
+  const fk=!useFile&&$('#rigFeed').value==='0';fdL[i]=fk?SRC.kfeed[(pos+i)%N]:l;fdR[i]=fk?SRC.kfeed[(pos+i)%N]:r}}
+let ctx=null,node=null,playing=false;
+function startAudio(){if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();eng.prepare(ctx.sampleRate);syncUI();renderSources(ctx.sampleRate);
+  node=ctx.createScriptProcessor(1024,0,2);node.onaudioprocess=e=>{const o0=e.outputBuffer.getChannelData(0),o1=e.outputBuffer.getChannelData(1),n=o0.length;fillSrc(n,blkL,blkR);eng.process(blkL,blkR,n,srcObj);o0.set(blkL.subarray(0,n));o1.set(blkR.subarray(0,n))};node.connect(ctx.destination)}
+ ctx.resume();playing=true;$('#rigPlay').innerHTML='&#9632; Stop';$('#rigPlay').classList.add('on')}
+function stopAudio(){if(ctx)ctx.suspend();playing=false;$('#rigPlay').innerHTML='&#9654; Play';$('#rigPlay').classList.remove('on')}
+$('#rigPlay').onclick=()=>playing?stopAudio():startAudio();
+$('#rigSrc').onchange=e=>{srcKind=e.target.value;if(srcKind==='file'&&!fileBuf)$('#rigFileIn').click()};
+$('#rigFile').onclick=()=>$('#rigFileIn').click();
+$('#rigFeed').onchange=()=>syncUI();
+$('#rigFileIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const c=new (window.AudioContext||window.webkitAudioContext)();const b=await c.decodeAudioData(await f.arrayBuffer());const d=b.getChannelData(0),m=new Float32Array(d.length);let pk=0;for(let i=0;i<d.length;i++){m[i]=d[i];pk=Math.max(pk,Math.abs(d[i]))}const k=pk>0?.9/pk:1;for(let i=0;i<m.length;i++)m[i]*=k;fileBuf=m;srcKind='file';$('#rigSrc').value='file';toast('Loaded '+f.name.slice(0,30));c.close()}catch(err){toast('Could not read that file')}};
+function runSynth(dt){const fs=eng.fs;let left=Math.round(fs*dt);while(left>0){const n=Math.min(2048,left);left-=n;fillSrc(n,blkL,blkR);eng.process(blkL,blkR,n,srcObj)}}
+
+/* ============ Sync UI from state ============ */
+const LINKRE=/^s\.([lh])(Str|Atk|AtkC|Hold|Rel|RelC)$/;
+onChange=id=>{const m=LINKRE.exec(id);if(st['s.link']&&m)st['s.'+(m[1]==='l'?'h':'l')+m[2]]=st[id];if(id==='s.link'&&st['s.link']){['Str','Atk','AtkC','Hold','Rel','RelC'].forEach(k=>st['s.h'+k]=st['s.l'+k])}
+ if(id==='m.on'||id==='s.on'){}syncUI()};
+function syncUI(){normX();
+ eng.eco=sys.eco;eng.rms=sys.rms;eng.autoGain=sys.auto;eng.ratioSteps=sys.steps;if(sys.la!==eng.sysLA)eng.setSys(sys.la);
+ for(let i=0;i<4;i++)lutCache[i]=buildLut(i);
+ eng.setMBC(coreM());eng.setSC(coreS());eng.bypass=!!st.bypassUI;
+ ctls.forEach(c=>c.refresh());layoutMS();
+ S.forEach((s,i)=>{const k=st['b'+i+'.sel'];s.nm.textContent=k>=0?BANDP[k].n:'- Select -'});
+ $('#pwA').classList.toggle('on',!!st['m.on']);$('#pwB').classList.toggle('on',!!st['s.on']);
+ $('#offGrp').style.display=st['s.trig']===2?'':'none';
+ app.classList.toggle('ro-off',!sys.ro);
+ latTxt.textContent='Latency '+(eng.lat/eng.fs*1000).toFixed(1)+' ms';
+ const dirty=isDirty();$('#pName').textContent=curName[page]+(dirty?' *':'');
+ const bb=$('#bBypass');bb.classList.toggle('on',!!st.bypassUI);bb.setAttribute('aria-pressed',st.bypassUI?'true':'false')}
+st.bypassUI=0;
+/* ============ Wood ============ */
+function mul32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function drawWood(cv,seed,edgeRight){const w=cv.width=104,h=cv.height=1440,g=cv.getContext('2d'),r=mul32(seed);g.fillStyle='#3d2210';g.fillRect(0,0,w,h);
+ for(let x=0;x<w;x++){const a=r();g.fillStyle='rgba(123,74,38,'+(.40*(.4+.6*a))+')';g.fillRect(x,0,1,h);if(r()<.35){g.fillStyle='rgba(90,52,25,'+(.75*r())+')';const y0=r()*h;g.fillRect(x,y0,1,h*(.2+.6*r()))}if(r()<.12){g.fillStyle='rgba(0,0,0,.35)';g.fillRect(x,0,1,h)}}
+ g.fillStyle='#000';g.fillRect(edgeRight?0:w-3,0,3,h)}
+drawWood($('#cheekL canvas'),11,true);drawWood($('#cheekR canvas'),29,false);
+/* ============ Page flip ============ */
+function setPage(n){page=n;$('#page1').hidden=n!==0;$('#page2').hidden=n!==1;$('#pgA').classList.toggle('on',n===0);$('#pgB').classList.toggle('on',n===1);$('#pgA').setAttribute('aria-selected',n===0);$('#pgB').setAttribute('aria-selected',n===1);syncUI()}
+$('#pgA').onclick=()=>setPage(0);$('#pgB').onclick=()=>setPage(1);
+[['pwA','m.on','Compressor page processing on or off. Click the lamp to switch it.'],['pwB','s.on','Sidechain page processing on or off. Click the lamp to switch it. It starts off so the sidechain does not pump until you want it.']].forEach(([id,p,t])=>{const e=$('#'+id);e.dataset.tip=t;e.addEventListener('click',ev=>{ev.stopPropagation();setP(p,st[p]?0:1,true)})});
+/* ============ Modals ============ */
+const modal=$('#modal');
+function openModal(title,body,foot,wide){modal.innerHTML='';modal.hidden=false;const d=el('div','dlg');if(wide)d.style.width=wide;const h=el('h2','',esc(title));const x=el('button','btn','Close');x.onclick=closeModal;h.appendChild(x);d.appendChild(h);const b=el('div','dbody');if(typeof body==='string')b.innerHTML=body;else b.appendChild(body);d.appendChild(b);if(foot){const f=el('div','dfoot');foot.forEach(a=>f.appendChild(a));d.appendChild(f)}modal.appendChild(d);return b}
+function closeModal(){modal.hidden=true;modal.innerHTML=''}
+modal.addEventListener('pointerdown',e=>{if(e.target===modal)closeModal()});
+const btn=(t,fn,c)=>{const b=el('button','btn'+(c?' '+c:''),t);b.onclick=fn;return b};
+function applySettings(){app.dataset.look=settings.look;T=tokens();settings.sys=sys;try{localStorage.setItem(KEY+'-settings',JSON.stringify(settings))}catch(e){}}
+$('#bSettings').onclick=()=>{const b=openModal('Settings','<label><input type="checkbox" id="sTips"> Info bubbles after hovering for about one second</label><label><input type="checkbox" id="sPow"> Power saving (redraw at 16 frames per second)</label><label>Colour look <select id="sLook"><option value="C">Look C, charcoal and white (default)</option><option value="A">Look A, neon navy</option><option value="B">Look B, purple soda pop</option></select></label><p style="color:var(--dim)">Looks only change colours. The wood, cat logo, bubbles and meters stay the same. The choice is saved with the plugin settings, not with presets.</p><button class="btn" id="sReset">Reset window size to 100%</button>');
+ b.querySelector('#sTips').checked=settings.tips;b.querySelector('#sPow').checked=settings.power;b.querySelector('#sLook').value=settings.look;
+ b.querySelector('#sTips').onchange=e=>{settings.tips=e.target.checked;applySettings()};b.querySelector('#sPow').onchange=e=>{settings.power=e.target.checked;applySettings()};b.querySelector('#sLook').onchange=e=>{settings.look=e.target.value;applySettings()};b.querySelector('#sReset').onclick=()=>{setScale(s0);toast('Window reset to 100%')}};
+function openSystem(){const b=openModal('System','<label><input type="checkbox" id="yEco"> ECO mode: lighter on the CPU (crossover slope capped at 48 dB per octave, spectrum drawn at half rate)</label><label>Lookahead <input type="range" id="yLa" min="1" max="7.5" step="0.5" style="flex:1"> <b id="yLaV"></b></label><div style="color:var(--dim);margin:-2px 0 6px">Lookahead of the band limiters and the master limiter, 1 to 7.5 ms (default 7.5). Longer is cleaner on fast peaks, shorter is lower latency. Reported latency: <span id="yLat"></span>.</div><label><input type="checkbox" id="yRo"> Local readouts: numbers above the knobs</label><label><input type="checkbox" id="yAuto"> Autogain: add make-up gain to each band to offset what its compressor takes off</label><label><input type="checkbox" id="ySteps"> Ratio in steps: the ratio snaps to whole numbers only (1, 2, 3 and so on, infinity above 20)</label><label><input type="checkbox" id="yRms"> RMS detector in the band compressors (default is peak)</label>',[btn('Close',closeModal)],'560px');
+ const set=()=>{b.querySelector('#yLaV').textContent=sys.la.toFixed(1)+' ms';b.querySelector('#yLat').textContent=(eng.lat/eng.fs*1000).toFixed(1)+' ms'};
+ [['yEco','eco'],['yRo','ro'],['yAuto','auto'],['ySteps','steps'],['yRms','rms']].forEach(([id,k])=>{const c=b.querySelector('#'+id);c.checked=sys[k];c.onchange=()=>{sys[k]=c.checked;applySettings();syncUI()}});
+ const r=b.querySelector('#yLa');r.value=sys.la;r.oninput=()=>{sys.la=+r.value;applySettings();syncUI();set()};set()}
+{const g=$('.gright');g.appendChild(Object.assign(btn('System',openSystem),{title:''}));g.lastChild.dataset.tip='System page: ECO, lookahead, local readouts, autogain, ratio in steps and detector.'}
+applySettings();
+$('#bGuide').onclick=()=>openModal('Guide',`<div class="gcols"><div><h3 class="gh">What is it?</h3><ul class="gl">
+<li><b>One plugin, two pages.</b> Flip with the Compressor and Sidechain buttons or press <kbd>P</kbd>. Each page has its own presets and its own lamp (click it to switch that page on or off). The sound runs page 1, then page 2.</li>
+<li><b>Page 1, Multiband Compressor:</b> 1 to 4 bands, draggable crossovers, per band compressor, limiter and dynamic pattern (DPC), main Mix, master limiter.</li>
+<li><b>Page 2, Multiband Sidechain:</b> ducks a low and a high band from a trigger (Audio, MIDI or Host Sync) with editable envelopes.</li>
+<li><b>Behaviour is modelled on public manuals;</b> the look, names, text and colours are ours. Not affiliated with anyone.</li></ul>
+<h3 class="gh">Where to start</h3><ul class="gl"><li>Page 1: aim for an input level of about -6 dB (cyan tick on the Pre meter), load Start Here, play the Full mix loop, lower the Threshold sliders until Gain Red. moves, then press <kbd>B</kbd> to compare.</li><li>Page 2: load Offbeat Pumper, switch the page lamp on, press Play. Drag the envelope points in the Low or Hi view.</li></ul>
+<h3 class="gh">Keys</h3><table><tr><td><kbd>P</kbd></td><td>Flip page</td></tr><tr><td><kbd>Space</kbd></td><td>Play or stop the preview</td></tr><tr><td><kbd>B</kbd></td><td>Bypass (A/B)</td></tr><tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Previous or next preset</td></tr><tr><td>Knobs</td><td>Drag, wheel, arrows; Shift for fine; double-click resets</td></tr></table></div>
+<div><h3 class="gh">What is verified and what is ours</h3><p><span class="vt">Verified from the public manuals and the screenshots we were given:</span> the control set of both pages; 1 to 4 bands, crossover slope menu from 6 to 96 dB/oct (default 36), per band Mute and Solo, Mix, pre and post meters with VU or Density, Pan and Gain; per band threshold slider, gain reduction meter, compressor with ratio 1:1 to inf, hard or soft knee, attack, release (AUTO below 1 ms), boost; limiter with release and output; Scope, Gain Red. and DPC views; System page with ECO, lookahead 1 to 7.5 ms (default 7.5), local readouts, autogain and ratio in steps (whole numbers only). Signal chain as in the manual notes: input gain per band, band compressor (autogain), band limiter, DPC (before or after the band limiter), band output, main Mix, Output Gain, master limiter, post limiter gain. Mix 100% is fully wet. Scope: red original, green compressed, grey overlap. Best input level about -6 dB. Trance Master 2 uses the values from our JPurrr-8000 spec. Page 2: trigger modes, Sens, filter types, view buttons, split frequency, listen, low and high volume, two envelopes with strength, attack curve, hold and release curve, Link, EQ1 and EQ2.</p>
+<p><span class="ou">Our own choices (the manuals do not give exact maths):</span> every number inside the DSP. Crossovers are Linkwitz-Riley with all-pass compensation (checked flat in tests). Compressor: peak detector (RMS in System), log-domain attack and release, soft knee 6 dB. Limiter: lookahead with sliding minimum. Auto release: 30 ms plus 8 ms per dB of gain reduction. Autogain formula: half of the static gain reduction at 0 dBFS. The In and Out handles in the graph trim a band before and after its processing. DPC pattern maths: gain up to 24 dB at 100% strength, 4 beats per cycle. Sidechain envelope curves, Sens scale (-6 to -60 dBFS), the Notch and Steep filter types, Host Sync offset, and the 24 dB per octave split are ours. The two pages run in series. Main Mix default is 50% (house rule).</p>
+<p>Signal flow, page 1: input gain and pan, crossover, per band (trim, compressor, DPC, limiter, Mix, trim, mute and solo), sum, main Mix, output gain and pan, master limiter. Page 2: trigger, EQ, detector, two envelopes, split, volumes, listen, output gain.</p></div></div>`,null,'1100px');
+$('#bAbout').onclick=()=>openModal('About & Support',`<p><b>${esc(NAME)}</b> by Studio 87, version ${VERSION} (design mockup). A free open source multiband compressor with a multiband sidechain page. Licence AGPL-3.0-or-later. Collects nothing and never uses the network.</p>
+<div class="aboutbtns"><a class="btn" href="https://github.com/${REPO}" target="_blank" rel="noopener">GitHub</a><a class="btn" href="https://github.com/${REPO}/releases" target="_blank" rel="noopener">Releases</a><a class="btn" href="https://ko-fi.com/studio87" target="_blank" rel="noopener">Ko-fi studio87</a></div>
+<p style="color:var(--dim)">Behaviour modelled on public manuals; not affiliated with any other company. Look, names and text are our own.</p>
+<p><b>Your presets are saved here:</b><br>Linux <kbd>~/.local/share/Studio 87/${esc(NAME)}/presets</kbd><br>Windows <kbd>%APPDATA%\\Studio 87\\${esc(NAME)}\\presets</kbd><br>macOS <kbd>~/Library/Application Support/Studio 87/${esc(NAME)}/presets</kbd></p>
+<p><b>Install and uninstall:</b> the offline installer puts the VST3 in the standard folder for your system. The uninstaller removes everything it installed and asks before touching your presets (it keeps them by default).</p><p>Support on Ko-fi is entirely optional. Nothing is locked.</p>`,null);
+/* ============ Preset browser ============ */
+let pbSel=null,pbType='All',pbQ='';
+function openBrowser(){const pg=page;pbSel=curName[pg];const wrap=el('div','');wrap.innerHTML='<div class="pb"><div style="display:flex;flex-direction:column;min-height:0"><input id="pbQ" placeholder="Search name, type or tag" style="margin-bottom:6px"><div class="chips" id="pbChips"></div><div class="list" id="pbList" style="flex:1"></div></div><div id="pbSide"></div></div>';
+ const b=openModal('Presets: '+(pg?'Sidechain':'Compressor'),wrap,[btn('Import',openImport),btn('Export mine',()=>openExport(null)),btn('Save current',()=>{closeModal();openSave()})],'820px');
+ const q=b.querySelector('#pbQ');q.value=pbQ;q.oninput=()=>{pbQ=q.value;renderList()};
+ function renderList(){const ch=b.querySelector('#pbChips');ch.innerHTML='';['All'].concat(TYPES[pg]).forEach(t=>{const c=el('button','chip'+(pbType===t?' on':''),t);c.onclick=()=>{pbType=t;renderList()};ch.appendChild(c)});
+  const l=b.querySelector('#pbList');l.innerHTML='';const qq=pbQ.toLowerCase();
+  allPresets(pg).filter(p=>(pbType==='All'||p.type===pbType)&&(!qq||(p.name+' '+p.type+' '+p.tags.join(' ')).toLowerCase().includes(qq))).forEach(p=>{const it=el('div','item'+(pbSel===p.name?' sel':''),'<span>'+esc(p.name)+'</span><small>'+(p.factory?p.type:'mine &middot; '+p.type)+'</small>');it.onclick=()=>{pbSel=p.name;renderList()};it.ondblclick=()=>{loadPreset(p);closeModal()};l.appendChild(it)});
+  const p=allPresets(pg).find(x=>x.name===pbSel),s=b.querySelector('#pbSide');s.innerHTML='';if(!p)return;
+  s.innerHTML='<h3 style="margin:0 0 4px">'+esc(p.name)+'</h3><div style="color:var(--dim)">'+p.type+(p.tags.length?' &middot; '+p.tags.map(esc).join(', '):'')+(p.factory?' &middot; factory':' &middot; yours')+'</div>';
+  const row=el('div','');row.style.marginTop='12px';const mk=(t,f)=>{const x=btn(t,f);x.style.margin='0 6px 6px 0';row.appendChild(x)};
+  mk('Load',()=>{loadPreset(p);closeModal()});mk('Export',()=>openExport(p));
+  if(!p.factory){mk('Edit properties',()=>openSave(p));mk('Delete',()=>{userP=userP.filter(x=>x!==p);saveUser();if(curName[pg]===p.name)curName[pg]=FACT[pg][0].name;pbSel=null;syncUI();renderList()})}s.appendChild(row)}
+ renderList()}
+$('#pName').onclick=openBrowser;
+$('#pName').ondblclick=()=>{const p=curPreset();if(p.factory){toast('Save a copy first, factory presets cannot be renamed');return}openSave(p)};
+function step(d){const a=allPresets(page);let i=a.findIndex(p=>p.name===curName[page]);i=(i+d+a.length)%a.length;loadPreset(a[i])}
+$('#pPrev').onclick=()=>step(-1);$('#pNext').onclick=()=>step(1);
+function openSave(edit){const pg=edit?edit.page:page,p0=edit||null;const body=el('div','','<label>Name <input id="svN" maxlength="60" style="flex:1"></label><label>Type <select id="svT">'+TYPES[pg].map(t=>'<option>'+t+'</option>').join('')+'</select></label><label>Tags <input id="svG" placeholder="comma separated" style="flex:1"></label><div id="svW" class="warn"></div>');
+ const nm=body.querySelector('#svN'),ty=body.querySelector('#svT'),tg=body.querySelector('#svG'),wr=body.querySelector('#svW'),cp=curPreset(pg);
+ nm.value=p0?p0.name:(isDirty()||cp.factory?cp.name.replace(/ \*$/,'')+' mine':cp.name);ty.value=p0?p0.type:cp.type;tg.value=p0?p0.tags.join(', '):cp.tags.join(', ');
+ const doSave=name=>{const tags=tg.value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,8);
+  if(p0){const old=p0.name;p0.name=name;p0.type=ty.value;p0.tags=tags;if(curName[pg]===old)curName[pg]=name}
+  else{const o={name,type:ty.value,tags,page:pg,p:snapshot(pg),factory:false};if(pg===0)o.pats=pats.map(a=>a.map(q=>q.slice()));userP=userP.filter(x=>!(x.name===name&&x.page===pg));userP.push(o);curName[pg]=name}
+  saveUser();closeModal();syncUI();toast('Saved '+name)};
+ openModal(p0?'Edit preset':'Save preset',body,[btn('Cancel',closeModal),btn(p0?'Save changes':'Save',()=>{const name=nm.value.trim();if(!name){wr.textContent='Give it a name.';return}
+  if(FACT[pg].some(f=>f.name===name)){wr.textContent='That is a factory name. Pick another, or it would be confusing.';return}
+  const clash=userP.find(x=>x.name===name&&x.page===pg&&x!==p0);
+  if(clash){wr.innerHTML='A preset named <b>'+esc(name)+'</b> already exists. ';wr.appendChild(btn('Overwrite',()=>doSave(name)));wr.appendChild(document.createTextNode(' '));wr.appendChild(btn('Save as new',()=>{nm.value=name+' 2';wr.textContent=''}));return}
+  doSave(name)},'on')],'520px')}
+$('#pSave').onclick=()=>openSave();
+function openExport(p){const lst=p?[p]:userP.filter(x=>x.page===page);const data={mpc:1,presets:lst.map(x=>({name:x.name,type:x.type,tags:x.tags,page:x.page,p:x.p,pats:x.pats}))};
+ const body=el('div','','<p>Copy this text and keep it as your backup. Import it again later or on another computer.</p><textarea id="exT" readonly></textarea>');body.querySelector('#exT').value=JSON.stringify(data,null,1);
+ openModal('Export',body,[btn('Copy',()=>{const t=body.querySelector('#exT');t.select();try{navigator.clipboard.writeText(t.value).then(()=>toast('Copied'),()=>toast('Press Ctrl+C to copy'))}catch(e){toast('Press Ctrl+C to copy')}}),btn('Back',openBrowser)],'620px')}
+function openImport(){const body=el('div','','<p>Paste exported preset text here. Unknown settings are ignored and anything invalid is refused.</p><textarea id="imT"></textarea><div id="imW" class="warn"></div>');
+ openModal('Import',body,[btn('Back',openBrowser),btn('Import',()=>{const w=body.querySelector('#imW');try{const o=JSON.parse(body.querySelector('#imT').value);if(!o||o.mpc!==1||!Array.isArray(o.presets))throw 0;if(!o.presets.length||!o.presets.every(validPreset))throw 0;
+  o.presets.forEach(x=>{const n=normPreset(x);if(FACT[n.page].some(f=>f.name===n.name))n.name+=' (imported)';userP=userP.filter(u=>!(u.name===n.name&&u.page===n.page));userP.push(n)});saveUser();toast('Imported '+o.presets.length+' preset'+(o.presets.length>1?'s':''));openBrowser()}catch(e){w.textContent='That text is not a valid preset export.'}})],'620px')}
+$('#bBypass').onclick=()=>{st.bypassUI^=1;syncUI()};
+/* ============ Tooltips ============ */
+let tipT=null;const tipEl=$('#tip');
+stage.addEventListener('pointerover',e=>{const t=e.target.closest('[data-tip]');clearTimeout(tipT);tipEl.hidden=true;if(!t||!settings.tips||!t.dataset.tip)return;
+ tipT=setTimeout(()=>{const r=t.getBoundingClientRect(),sr=stage.getBoundingClientRect(),sc=curScale();tipEl.textContent=t.dataset.tip;tipEl.hidden=false;let x=(r.left-sr.left)/sc,y=(r.bottom-sr.top)/sc+6;const tw=tipEl.offsetWidth;x=Math.max(60,Math.min(1280-tw-60,x));if(y+tipEl.offsetHeight>716)y=(r.top-sr.top)/sc-tipEl.offsetHeight-6;tipEl.style.left=x+'px';tipEl.style.top=y+'px'},1000)});
+stage.addEventListener('pointerout',e=>{if(!e.relatedTarget||!e.relatedTarget.closest||!e.relatedTarget.closest('[data-tip]')){clearTimeout(tipT);tipEl.hidden=true}});
+stage.addEventListener('pointerdown',()=>{clearTimeout(tipT);tipEl.hidden=true});
+/* ============ Scaling and resize handles ============ */
+const W0=1280,H0=720;let s0=1,sc=1;
+function avail(){return Math.max(160,(app.clientWidth||window.innerWidth-32))}
+function curScale(){return sc}
+function setScale(s){const mx=Math.min(1.5*s0,avail()/W0*1.0);sc=Math.max(0.4*s0,Math.min(Math.max(mx,s0),s));frame.style.width=W0*sc+'px';frame.style.height=H0*sc+'px';stage.style.transform='scale('+sc+')';$('#zPct').textContent=Math.round(sc/s0*100)+'%';$('#winsz').textContent=Math.round(W0*sc)+' × '+Math.round(H0*sc)+' px'}
+function fit(){s0=Math.min(1,avail()/W0);return s0}
+window.addEventListener('resize',()=>{const r=sc/s0;fit();setScale(s0*r)});fit();setScale(s0);
+$$('.rh').forEach(h=>{let d=null;h.addEventListener('pointerdown',e=>{h.setPointerCapture(e.pointerId);d={x:e.clientX,y:e.clientY,s:sc};e.preventDefault()});
+ h.addEventListener('pointermove',e=>{if(!d)return;const k=h.dataset.h,dx=e.clientX-d.x,dy=e.clientY-d.y;const ex=k.includes('e')?dx*2:k.includes('w')?-dx*2:0,ey=k.includes('s')?dy*2:k.includes('n')?-dy*2:0;const rx=ex/(W0*d.s),ry=ey/(H0*d.s);setScale(d.s*(1+(Math.abs(rx)>Math.abs(ry)?rx:ry)))});
+ h.addEventListener('pointerup',()=>d=null);h.addEventListener('pointercancel',()=>d=null)});
+$('#zMinus').onclick=()=>setScale(sc*.9);$('#zPlus').onclick=()=>setScale(sc*1.1);$('#zPct').onclick=()=>setScale(s0);
+$$('.cheek').forEach(c=>c.addEventListener('dblclick',()=>{setScale(s0);toast('Window reset to 100%')}));
+/* ============ Keyboard ============ */
+document.addEventListener('keydown',e=>{if(!modal.hidden){if(e.key==='Escape')closeModal();return}const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA'))return;
+ if(e.key===' '&&t.tagName!=='BUTTON'){e.preventDefault();playing?stopAudio():startAudio()}
+ else if(e.key==='b'||e.key==='B'){st.bypassUI^=1;syncUI()}else if(e.key==='p'||e.key==='P'){setPage(page?0:1)}else if(e.key==='['){step(-1)}else if(e.key===']'){step(1)}});
+/* ============ Frame loop ============ */
+let visible=true,lastT=0,frameN=0;
+function drawSide2(){}
+function draw(){frameN++;const half=sys.eco&&(frameN&1);
+ if(page===0){if(st['m.fft']>0&&!half){const fm=st['m.fft'];if(fm===1||fm===2)eng.sp.pre.update(eng.fs);if(fm===1||fm===3)eng.sp.post.update(eng.fs)}
+  drawVU(gPre,eng.pre,'pre');drawVU(gPost,eng.post,'post');drawGraph();drawStrips();limGr.textContent='Limiter GR '+(-(eng.mGr||0)).toFixed(1)+' dB'}
+ else{if(!half)eng.sp.feed.update(eng.fs);sysHist[sysHi]=L2D(eng.scEnvF||0);sysHi=(sysHi+1)%sysHist.length;drawS();
+  drawSide(mIn,eng.sInL||0,eng.sInR||0);drawSide(mOut,eng.sOutL||0,eng.sOutR||0);window.__lamp.style.background=(eng.scTrigFlash||0)>.2?'#FFD100':'#2a2c33'}}
+function frameLoop(t){requestAnimationFrame(frameLoop);if(!visible||document.hidden){lastT=t;return}const minGap=settings.power?1000/16:0;if(t-lastT<minGap&&lastT)return;const dt=Math.min(.1,(t-lastT)/1000||1/60);lastT=t;
+ if(!playing)runSynth(dt);draw()}
+new IntersectionObserver(es=>{visible=es[0].isIntersecting}).observe(frame);
+/* ============ Boot ============ */
+document.title=NAME;
+{const parts=NAME.split(' ');$('#brandName').innerHTML=parts[0].replace(/(Paw)$/,'<i>$1</i>');$('#brandSub').textContent=(parts.slice(1).join(' ')+' · Studio 87').trim()}
+$('#footTxt').textContent='Studio 87 · '+NAME+' v'+VERSION+' design mockup';
+$('.brand').dataset.tip=NAME+' by Studio 87: one plugin, two pages.';
+for(let i=0;i<4;i++)pats[i]=PATS[0].f();
+loadPreset(FACT[1][0]);st['s.on']=0;loadPreset(FACT[0][0]);
+setPage(0);
+runSynth(1.5);requestAnimationFrame(frameLoop);
+window.__mp={st,eng,syncUI,setPage,loadPreset,FACT,pats,sys,setScale,runSynth,draw,startAudio,stopAudio,get sc(){return sc},get page(){return page},curName,userP,PS,ctls,get playing(){return playing}};
+
+
+})();
+</script>
