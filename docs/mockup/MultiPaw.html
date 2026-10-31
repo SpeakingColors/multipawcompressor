@@ -55,6 +55,8 @@ button,select,input{font-family:var(--font-ui)}
 .rig .hint{font-size:12px;color:var(--dim);white-space:nowrap}
 .rig .tag{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);border:1px dashed var(--line);padding:1px 6px;border-radius:3px;white-space:nowrap}
 .rig label{font-size:12px;color:var(--dim);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.rig .rd{font-family:var(--font-num);font-size:11px;color:var(--ink);white-space:nowrap}
+.rig .rd b{color:var(--accent);font-weight:600}
 .foot{height:24px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;color:var(--dim);letter-spacing:1px;border-top:1px solid var(--line);background:var(--plate2)}
 .cap{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--title);white-space:nowrap}
 canvas{display:block}
@@ -211,10 +213,11 @@ canvas{display:block}
             <button class="btn" id="rigFile" data-tip="Load your own audio file for the preview. Nothing is uploaded; it is decoded in this page only.">Load file</button>
             <input type="file" id="rigFileIn" accept="audio/*" hidden>
             <label data-tip="Sidechain feed for page 2 in Audio mode. Kick track: a separate kick plays the trigger, as if a kick track was routed in. Same signal: the sound itself triggers the pumping.">Trigger feed <select id="rigFeed" aria-label="Sidechain feed"><option value="0">Kick track</option><option value="1">Same signal</option></select></label>
-            <span class="hint" data-tip="The preview rig plays loops at 150 BPM. Host Sync and the DPC patterns follow this transport.">Loop 150 BPM</span>
+            <label data-tip="Preview level (preview only). The factory presets are made for loud, near-mastered material, so the quiet test sounds barely touch them. Quiet: as generated. Loud: 6 dB hotter. Mastered: 10 dB hotter, like a finished track. The Input gain knob of the plugin does the same job on your own music.">Level <select id="rigLvl" aria-label="Preview level"><option value="0">Quiet</option><option value="6" selected>Loud</option><option value="10">Mastered</option></select></label>
+            <button class="tgb" id="rigLM" aria-pressed="false" style="height:24px;font-size:13px" data-tip="Level match (preview only): the compressed sound is turned up or down to the same average loudness as the dry sound, so A/B (B key) compares density, punch and sustain instead of volume. Uses a 0.5 s average. Loops play at 150 BPM; Host Sync and DPC follow that transport.">Level match</button>
             <div class="sp"></div>
-            <span class="hint" id="rigHint">B compares with the dry sound. P flips the page.</span>
-            <div class="tag">Preview rig, not part of the plugin</div>
+            <span class="rd" id="rigRd" data-tip="Live comparison of the compressor page against the dry input (after input gain), averaged over about half a second. RMS: average level change in dB. Crest: peak minus RMS, dry then compressed. LU at equal peak: how much louder the compressed sound can be played before its peak reaches the dry peak (dry crest minus compressed crest). Mix, autogain and Level match all show up here."></span>
+            <div class="tag" data-tip="This strip only exists in the design mockup. The plugin itself has no preview rig.">Preview rig, not plugin</div>
           </section>
         </div>
         <footer class="foot"><span id="footTxt"></span><span id="winsz">1280 &times; 720</span></footer>
@@ -289,7 +292,7 @@ const BPM=150,SPB=60/BPM;
 const NB=4;
 class Engine{
  constructor(){this.fs=48000;this.sysLA=7.5;this.eco=false;this.rms=false;this.autoGain=false;this.ratioSteps=false;
-  this.tpos=0;this.page=[true,false];this.bypass=false;this.feedKind=0;this.trigKind=0;
+  this.lm=false;this.lmg=1;this.rdD=0;this.rdC=0;this.rdPkD=0;this.rdPkC=0;this.tpos=0;this.page=[true,false];this.bypass=false;this.feedKind=0;this.trigKind=0;
   this.sp={in:new Spec(),pre:new Spec(),post:new Spec(),feed:new Spec()};this.specOn=true;
   this.pre={pk:0,rms:0,l:0,r:0,rl:0,rr:0};this.post={pk:0,rms:0,l:0,r:0,rl:0,rr:0};this.scIn={pk:0},this.scOut={pk:0};
   this.prepare(48000)}
@@ -298,7 +301,7 @@ class Engine{
   this.ap=[];for(let b=0;b<NB;b++){this.ap.push([]);for(let j=0;j<Math.max(0,b-1);j++)this.ap[b].push([new XO(),new XO()])}
   this.bandLL=[];this.bandDry=[];this.bandL=[];this.bandR=[];for(let b=0;b<NB;b++){this.bandLL.push(new LL(maxLA));this.bandDry.push([new DL(maxLA),new DL(maxLA)])}
   this.mLL=new LL(maxLA);this.dryTot=[new DL(2*maxLA+8),new DL(2*maxLA+8)];this.mixDry=[new DL(maxLA),new DL(maxLA)];
-  this.bs=[];for(let b=0;b<NB;b++)this.bs.push({env:0,pw:0,cur:0,gr:0,lgr:0,inDb:-90,outPk:0,inPk:0,dpcG:1,dpcPh:0,lvl:-90,scI:new Float32Array(480),scO:new Float32Array(480),scG:new Float32Array(480),sc:0,aI:0,aO:0,aG:0,aN:0});
+  this.bs=[];for(let b=0;b<NB;b++)this.bs.push({agr:0,env:0,pw:0,cur:0,gr:0,lgr:0,inDb:-90,outPk:0,inPk:0,dpcG:1,dpcPh:0,lvl:-90,scI:new Float32Array(480),scO:new Float32Array(480),scG:new Float32Array(480),sc:0,aI:0,aO:0,aG:0,aN:0});
   this.colN=Math.round(fs*0.006);this.grHist=[0,1,2,3].map(()=>new Float32Array(360));this.ghN=0;
   this.pkSm=0;this.gI=1;this.gO=1;
   /* sidechain */
@@ -312,13 +315,13 @@ class Engine{
   for(let b=2;b<this.nb;b++)for(let j=0;j<b-1;j++)for(let ch=0;ch<2;ch++)this.ap[b][j][ch].set(fs,m.x[j],N);
   const mk=(ms)=>1-Math.exp(-1/(Math.max(0.02,ms)*0.001*fs));
   this.bp=m.b.map((b,i)=>{const R=this.ratioSteps?ratioOf(snapRatio(b.u)):ratioOf(b.u);
-   const auto=b.rel<1;let mk2=this.autoGain?Math.min(24,Math.abs(Math.min(0,b.thr))*(isFinite(R)?(1-1/R):1)*0.5):0;
+   const auto=b.rel<1;let mk2=0;   /* autogain is dynamic, see process() */
    return{on:b.on,cOn:b.cOn,thr:b.thr,R,knee:b.knee,aA:mk(b.atk),rel:b.rel,auto,aR:mk(auto?150:b.rel),boost:D2L(b.boost+mk2),lOn:b.lOn,lRel:1-Math.exp(-1/(Math.max(1,b.lRel)*0.001*fs)),lAuto:b.lRel<1,ceil:D2L(b.lOut),inG:D2L(b.inG),outG:D2L(b.outG),mix:b.mix/100,mute:b.mute,solo:b.solo,
     dOn:b.dOn,dStr:b.dStr/100,dX2:b.dX2,dFlip:b.dFlip,dPre:b.dPre,pat:b.pat}});
   this.anySolo=this.bp.some((b,i)=>i<this.nb&&b.solo);
   this.mMix=m.mix/100;this.mCeil=D2L(m.lim.ceil);this.mLimOn=m.lim.on;this.mKr=1-Math.exp(-1/(0.08*fs));
   this.gIn=D2L(m.inG);this.gOut=D2L(m.outG);this.gPost=D2L(m.postG||0);const pan=(p)=>{const a=(p+1)*Math.PI/4;return[Math.cos(a)*Math.SQRT2,Math.sin(a)*Math.SQRT2]};
-  this.pIn=pan(m.inPan);this.pOut=pan(m.outPan);this.kdet=1-Math.exp(-1/(0.0015*fs));this.krms=1-Math.exp(-1/(0.003*fs));
+  this.pIn=pan(m.inPan);this.pOut=pan(m.outPan);this.kag=1/(0.4*fs);this.kdet=1-Math.exp(-1/(0.0015*fs));this.krms=1-Math.exp(-1/(0.003*fs));
   this.page[0]=m.on;this.dpcLut=m.b.map(b=>b.lut)}
  /* ---- Sidechain parameters ---- */
  setSC(s){this.s=s;const fs=this.fs;this.page[1]=s.on;this.scInG=D2L(s.inG);this.scOutG=D2L(s.outG);this.trigKind=s.trig;
@@ -336,7 +339,7 @@ class Engine{
  /* ---- process one block, in place ---- */
  process(L,R,n,src){const m=this.m,fs=this.fs,nb=this.nb;
   const d0=this.dryTot;let preP=0,postP=0;
-  const bypass=this.bypass;let pl=0,pr=0,ql=0,qr=0;
+  const bypass=this.bypass;let rpd=0,rpc=0,pl=0,pr=0,ql=0,qr=0;
   for(let i=0;i<n;i++){let xl=L[i],xr=R[i];
    const tp=this.tpos+i; /* transport sample */
    this.sp.in.push((xl+xr)*.5);
@@ -361,7 +364,8 @@ class Engine{
        const ldb=20*Math.log10(det+1e-9);S.lvl=ldb;const tg=Math.min(60,grCurve(ldb-p.thr,p.R,p.knee,6));
        let k;if(tg>S.cur)k=p.aA;else k=p.auto?1-Math.exp(-1/((30+8*Math.max(S.cur,0)) *0.001*fs)):p.aR;S.cur+=(tg-S.cur)*k;gdb=S.cur}
       else{S.lvl=20*Math.log10(lv+1e-9);S.cur+=(0-S.cur)*0.01}
-      let g=Math.exp(-gdb*0.1151293)*(p.cOn?p.boost:1);
+      if(gdb>0.2)S.agr+=(gdb-S.agr)*this.kag;   /* autogain: slow average of the gain reduction while the band is working, made up again (100%) */
+      let g=Math.exp(-gdb*0.1151293)*(p.cOn?p.boost:1)*(this.autoGain&&p.cOn?Math.exp(1.0*S.agr*0.1151293):1);
       /* dynamic pattern compressor: gain from the pattern, position follows the transport (4 beats, x2 doubles the speed) */
       let dg=1;if(p.dOn){const beat=tp/(SPB*fs),cyc=p.dX2?2:4,ph=((beat/cyc)%1+1)%1;let y=this.dpcLut[b][(ph*512)|0];if(p.dFlip)y=1-y;const dd=-(1-y)*24*p.dStr;dg=Math.exp(dd*0.1151293);
        S.dpcG+=(dg-S.dpcG)*0.02;dg=S.dpcG}
@@ -376,11 +380,15 @@ class Engine{
      const audible=!p.mute&&(!this.anySolo||p.solo);
      S.aI=Math.max(S.aI,lv);const oo=audible?Math.max(Math.abs(al),Math.abs(ar)):0;S.aO=Math.max(S.aO,oo);S.aG=Math.max(S.aG,S.cur);
      if(++S.aN>=this.colN){S.scI[S.sc]=S.aI;S.scO[S.sc]=S.aO;S.scG[S.sc]=S.aG;S.sc=(S.sc+1)%480;S.aI=S.aO=S.aG=0;S.aN=0}
-     if(audible){wl+=al;wr+=ar;dryl+=dBl*p.outG;dryr+=dBr*p.outG}}
+     if(audible){wl+=al;wr+=ar}dryl+=dBl*p.outG;dryr+=dBr*p.outG}
     /* main Mix: dry bands (aligned) against wet bands */
     ol=dryl*(1-this.mMix)+wl*this.mMix;orr=dryr*(1-this.mMix)+wr*this.mMix;
     ol*=this.gOut;orr*=this.gOut;
     const M=this.mLL;M.proc(ol,orr,this.mCeil,this.mKr,this.mLimOn);ol=M.ol*this.gPost;orr=M.or*this.gPost;this.mGr=this.mLimOn?M.gr:0;
+    /* live Compressed vs Dry readout (dry = input after input gain; both about 0.5 s RMS) and the preview-only Level match */
+    {const kk=1/(0.5*fs);this.rdD+=((xl*xl+xr*xr)*.5-this.rdD)*kk;this.rdC+=((ol*ol+orr*orr)*.5-this.rdC)*kk;
+     const pd=Math.max(Math.abs(xl),Math.abs(xr)),pc=Math.max(Math.abs(ol),Math.abs(orr));if(pd>rpd)rpd=pd;if(pc>rpc)rpc=pc;
+     if(this.lm){const tg=clamp(Math.sqrt((this.rdD+1e-12)/(this.rdC+1e-12)),0.25,4);this.lmg+=(tg-this.lmg)*kk;const g=this.lmg;ol*=g;orr*=g;if(Math.abs(ol)>.97)ol=Math.tanh(ol/.97)*.97;if(Math.abs(orr)>.97)orr=Math.tanh(orr/.97)*.97}else this.lmg=1}
    }
    if(this.page[0]||true){this.sp.pre.push((xl+xr)*.5);this.sp.post.push((ol+orr)*.5)}
    /* ---------- page 2: multiband sidechain ---------- */
@@ -410,9 +418,9 @@ class Engine{
    if(!isFinite(ol)||!isFinite(orr)){ol=orr=0;this.reset()}
    L[i]=ol;R[i]=orr;postP=Math.max(postP,Math.abs(ol),Math.abs(orr));preP=Math.max(preP,preDbPk);
    this.pre.rms+=((xl*xl+xr*xr)*.5-this.pre.rms)*0.00015;this.post.rms+=((ol*ol+orr*orr)*.5-this.post.rms)*0.00015;this.pre.rl+=(xl*xl-this.pre.rl)*0.00015;this.pre.rr+=(xr*xr-this.pre.rr)*0.00015;this.post.rl+=(ol*ol-this.post.rl)*0.00015;this.post.rr+=(orr*orr-this.post.rr)*0.00015;pl=Math.max(pl,Math.abs(xl));pr=Math.max(pr,Math.abs(xr));ql=Math.max(ql,Math.abs(ol));qr=Math.max(qr,Math.abs(orr))}
-  this.tpos+=n;const dec=Math.pow(.9,n/512);this.sInL=Math.max(this.sI||0,(this.sInL||0)*dec);this.sInR=Math.max(this.sIr||0,(this.sInR||0)*dec);this.sOutL=Math.max((this.sO||0)*(this.page[1]?this.scOutG:1),(this.sOutL||0)*dec);this.sOutR=Math.max(this.sOr||0,(this.sOutR||0)*dec);this.sI=this.sIr=this.sO=this.sOr=0;this.scTrigFlash=(this.scTrigFlash||0)*Math.pow(.9,n/512);this.pre.l=Math.max(pl,this.pre.l*dec);this.pre.r=Math.max(pr,this.pre.r*dec);this.post.l=Math.max(ql,this.post.l*dec);this.post.r=Math.max(qr,this.post.r*dec);this.pre.pk=Math.max(preP,this.pre.pk*dec);this.post.pk=Math.max(postP,this.post.pk*dec);
+  this.tpos+=n;{const h=Math.pow(.5,n/fs);this.rdPkD=Math.max(rpd,this.rdPkD*h);this.rdPkC=Math.max(rpc,this.rdPkC*h)}const dec=Math.pow(.9,n/512);this.sInL=Math.max(this.sI||0,(this.sInL||0)*dec);this.sInR=Math.max(this.sIr||0,(this.sInR||0)*dec);this.sOutL=Math.max((this.sO||0)*(this.page[1]?this.scOutG:1),(this.sOutL||0)*dec);this.sOutR=Math.max(this.sOr||0,(this.sOutR||0)*dec);this.sI=this.sIr=this.sO=this.sOr=0;this.scTrigFlash=(this.scTrigFlash||0)*Math.pow(.9,n/512);this.pre.l=Math.max(pl,this.pre.l*dec);this.pre.r=Math.max(pr,this.pre.r*dec);this.post.l=Math.max(ql,this.post.l*dec);this.post.r=Math.max(qr,this.post.r*dec);this.pre.pk=Math.max(preP,this.pre.pk*dec);this.post.pk=Math.max(postP,this.post.pk*dec);
   this.ghAcc=(this.ghAcc||0)+n;if(this.ghAcc>=fs/60){this.ghAcc=0;for(let b=0;b<NB;b++){this.grHist[b][this.ghN]=this.bs[b].cur}this.ghN=(this.ghN+1)%360}}
- reset(){this.xo.forEach(a=>a.forEach(x=>{x.lps.forEach(f=>f.reset());x.hps.forEach(f=>f.reset())}));this.ap.forEach(a=>a.forEach(p=>p.forEach(x=>{x.lps.forEach(f=>f.reset());x.hps.forEach(f=>f.reset())})));this.bs.forEach(s=>{s.env=s.pw=s.cur=0})}
+ reset(){this.xo.forEach(a=>a.forEach(x=>{x.lps.forEach(f=>f.reset());x.hps.forEach(f=>f.reset())}));this.ap.forEach(a=>a.forEach(p=>p.forEach(x=>{x.lps.forEach(f=>f.reset());x.hps.forEach(f=>f.reset())})));this.bs.forEach(s=>{s.env=s.pw=s.cur=s.agr=0})}
 }
 const DEFMBC=()=>({bands:4,slope:3,x:[110,500,5000],mix:50,inG:0,inPan:0,outG:0,outPan:0,lim:{on:true,ceil:-0.3},on:true,slopeIdx:3,
  b:[0,1,2,3].map(()=>({on:true,cOn:true,thr:-18,u:.5,knee:1,atk:20,rel:150,boost:0,lOn:true,lRel:50,lOut:0,inG:0,outG:0,mix:100,mute:false,solo:false,dOn:false,dStr:50,dX2:false,dFlip:false,dPre:true,pat:[],lut:new Float32Array(513).fill(1)}))});
@@ -450,7 +458,7 @@ P('s.link',1,0,1,0,{int:1});P('s.e1f',1,20,20000,200,{log:1});P('s.e1g',1,-18,18
 P('s.view',1,0,8,0,{int:1});P('s.grid',1,0,3,2,{int:1});P('s.offset',1,0,1,0);P('s.span',1,0,3,0,{int:1});
 const pats=[[],[],[],[]];                 /* DPC pattern nodes per band: [[x 0..1 of the cycle, y 0..1 (1 = untouched)], ...] */
 const sys={eco:false,la:7.5,ro:true,auto:false,steps:false,rms:false};
-const settings={tips:true,power:false,look:'C'};try{Object.assign(settings,JSON.parse(localStorage.getItem(KEY+'-settings')||'{}'));if(settings.sys)Object.assign(sys,settings.sys)}catch(e){}
+const settings={tips:true,power:false,look:'C'};try{Object.assign(settings,JSON.parse(localStorage.getItem(KEY+'-settings')||'{}'));if(settings.sys)Object.assign(sys,settings.sys);if(settings.sv!==3)sys.auto=false}catch(e){}
 const posOf=(id,v)=>{const p=PS[id];return p.log?Math.log(v/p.min)/Math.log(p.max/p.min):(v-p.min)/(p.max-p.min)};
 const valOf=(id,t)=>{const p=PS[id];t=clamp(t,0,1);let v=p.log?p.min*Math.pow(p.max/p.min,t):p.min+t*(p.max-p.min);return p.int?Math.round(v):v};
 /* ============ Formatting ============ */
@@ -474,11 +482,11 @@ function knob(parent,o){ /* o: id,label,size,tip,fmt,color,cls */
    const bip=p.min<0&&p.max>0&&!p.log,t0=bip?posOf(o.id,0):0,a0=-135+270*t0;va.setAttribute('d',Math.abs(a-a0)<.5?'':arc(50,50,43,Math.min(a0,a),Math.max(a0,a)));
    kv.textContent=o.fmt?o.fmt(st[o.id]):String(st[o.id]);kn.setAttribute('aria-valuenow',st[o.id].toFixed(2))}};ctls.push(c);
  const dflt=o.def!==undefined?o.def:p.def;
- let drag=null;kn.addEventListener('pointerdown',e=>{kn.setPointerCapture(e.pointerId);drag={y:e.clientY,t:posOf(o.id,st[o.id])};e.preventDefault()});
- kn.addEventListener('pointermove',e=>{if(!drag)return;const d=-(e.clientY-drag.y)/curScale();setP(o.id,valOf(o.id,drag.t+d/(e.shiftKey?1500:170)),true)});
- kn.addEventListener('pointerup',()=>drag=null);kn.addEventListener('pointercancel',()=>drag=null);
- kn.addEventListener('dblclick',()=>setP(o.id,dflt,true));
- kn.addEventListener('wheel',e=>{e.preventDefault();const dt=(e.deltaY<0?1:-1)*(e.shiftKey?.002:.02);setP(o.id,p.int?st[o.id]+(e.deltaY<0?1:-1):valOf(o.id,posOf(o.id,st[o.id])+dt),true)},{passive:false});
+ let drag=null;w.addEventListener('pointerdown',e=>{w.setPointerCapture(e.pointerId);drag={y:e.clientY,t:posOf(o.id,st[o.id])};e.preventDefault()});
+ w.addEventListener('pointermove',e=>{if(!drag)return;const d=-(e.clientY-drag.y)/curScale();setP(o.id,valOf(o.id,drag.t+d/(e.shiftKey?1500:170)),true)});
+ w.addEventListener('pointerup',()=>drag=null);w.addEventListener('pointercancel',()=>drag=null);
+ w.addEventListener('dblclick',()=>setP(o.id,dflt,true));
+ w.addEventListener('wheel',e=>{e.preventDefault();const dt=(e.deltaY<0?1:-1)*(e.shiftKey?.002:.02);setP(o.id,p.int?st[o.id]+(e.deltaY<0?1:-1):valOf(o.id,posOf(o.id,st[o.id])+dt),true)},{passive:false});
  kn.addEventListener('keydown',e=>{const s=e.shiftKey?.002:.01;const k=e.key;if(k==='ArrowUp'||k==='ArrowRight'){setP(o.id,valOf(o.id,posOf(o.id,st[o.id])+s),true);e.preventDefault()}else if(k==='ArrowDown'||k==='ArrowLeft'){setP(o.id,valOf(o.id,posOf(o.id,st[o.id])-s),true);e.preventDefault()}else if(k==='Home'){setP(o.id,p.min,true)}else if(k==='End'){setP(o.id,p.max,true)}});
  return w}
 function toggle(parent,id,txt,tip,cls){const b=el('button','tgb'+(cls?' '+cls:''),txt);b.dataset.tip=tip;b.setAttribute('aria-pressed','false');b.onclick=()=>setP(id,st[id]?0:1,true);parent.appendChild(b);ctls.push({refresh(){b.classList.toggle('on',!!st[id]);b.setAttribute('aria-pressed',st[id]?'true':'false')}});return b}
@@ -895,24 +903,24 @@ function MB(name,type,tags,g,bs){const p={'m.on':1};const G={bands:'m.bands',mix
 const THR=(t,r,a,l,o)=>Object.assign({thr:t,r,atk:a,rel:l},o||{});
 const FACT=[[],[]];
 FACT[0]=[
- MB('Start Here','Utility',['start','general'],{bands:4,slope:36,x:[110,500,5000],mix:50},[THR(-18,2,30,150),THR(-18,2,20,120),THR(-18,2,12,100),THR(-18,2,6,80)]),
+ MB('Start Here','Utility',['start','general'],{bands:4,slope:36,x:[110,500,5000],mix:50},[THR(-22,2,30,150),THR(-24,2,20,120),THR(-20,2,12,100),THR(-26,2,6,80)]),
  (()=>{const p=MB('Trance Master 2','Master',['trance','master'],{bands:4,slope:24,x:[113,1374,8152],mix:75},[THR(-28,4.74,0.5,3.09,{on:0,knee:0,lRel:0.5}),THR(-25,4.60,40,0.5,{knee:0,lRel:50}),THR(-24,2.83,15.2,0.5,{knee:0,lRel:50}),THR(-25,5.75,10.7,38.86,{knee:0,lRel:50})]);p.p['m.fft']=2;return p})(),
  MB('Hardstyle Kick Bus Glue','Kick',['hardstyle','kick','glue'],{bands:3,slope:24,x:[80,3500],mix:70},[THR(-14,4,30,80,{boost:1,knee:0}),THR(-16,3,10,100),THR(-18,2,4,60)]),
  MB('Bass Tight','Bass',['bass','tight'],{bands:2,slope:48,x:[150],mix:100},[THR(-20,5,10,60,{boost:2,knee:0}),{cOn:0,lOn:0}]),
  MB('Telephone','Creative',['telephone','filter','lofi'],{bands:3,slope:96,x:[300,3100],mix:100},[{mute:1},THR(-24,4,5,60,{boost:3}),{mute:1}]),
- MB('Master Glue','Master',['master','glue','gentle'],{bands:3,slope:24,x:[120,3000],mix:100,limOn:1,ceil:-0.5},[THR(-14,1.5,30,.5,{lOn:0}),THR(-14,1.8,30,.5,{lOn:0}),THR(-14,1.5,20,.5,{lOn:0})]),
+ MB('Master Glue','Master',['master','glue','gentle'],{bands:3,slope:24,x:[120,3000],mix:100,limOn:1,ceil:-0.5},[THR(-22,1.5,30,.5,{lOn:0}),THR(-22,1.8,30,.5,{lOn:0}),THR(-22,1.5,20,.5,{lOn:0})]),
  MB('Offbeat Pumper','Creative',['offbeat','pump','dpc'],{bands:3,slope:36,x:[120,2500],mix:100},[THR(-24,2,20,100,{pat:3,str:70}),THR(-24,2,20,100,{pat:3,str:45}),THR(-24,1.5,20,100)]),
  MB('Kick Accentuator','Kick',['kick','punch','dpc'],{bands:3,slope:36,x:[100,4000],mix:100},[THR(-22,3,20,90,{pat:1,str:60}),THR(-24,2,20,90,{pat:1,str:30}),{cOn:0}]),
- MB('Clean Parallel New York','Bus',['parallel','new york'],{bands:4,slope:36,x:[110,500,5000],mix:35},[THR(-30,6,5,80,{boost:6}),THR(-30,6,4,70,{boost:6}),THR(-30,6,3,60,{boost:6}),THR(-30,6,2,50,{boost:6})]),
+ MB('Clean Parallel New York','Bus',['parallel','new york'],{bands:4,slope:36,x:[110,500,5000],mix:35},[THR(-26,6,5,80,{boost:6}),THR(-26,6,4,70,{boost:6}),THR(-26,6,3,60,{boost:6}),THR(-26,6,2,50,{boost:6})]),
  MB('Hihat Rider','Creative',['hats','dpc','groove'],{bands:4,slope:36,x:[110,500,5000],mix:100},[{cOn:0},{cOn:0},THR(-26,2,10,100,{pat:4,str:35}),THR(-26,2,6,80,{pat:4,str:60})]),
  MB('Sizzle Tamer','Utility',['hats','sibilance'],{bands:4,slope:36,x:[120,600,6500],mix:100},[{cOn:0,lOn:0},{cOn:0,lOn:0},{cOn:0,lOn:0},THR(-22,4,1,40,{lOut:-1})]),
  MB('Loudness Push','Master',['loud','master'],{bands:4,slope:36,x:[100,450,4800],mix:100,ceil:-0.4},[THR(-20,3,20,120,{boost:3}),THR(-20,3,15,100,{boost:3}),THR(-20,3,8,80,{boost:3}),THR(-20,3,4,60,{boost:3})]),
- MB('Lead Tamer','Bus',['lead','mids'],{bands:3,slope:24,x:[250,4500],mix:100},[{cOn:0},THR(-26,4,8,90,{knee:1}),THR(-24,3,3,60)]),
+ MB('Lead Tamer','Bus',['lead','mids'],{bands:3,slope:24,x:[250,4500],mix:100},[{cOn:0},THR(-20,4,8,90,{knee:1}),THR(-24,3,3,60)]),
  MB('Low End Control','Bass',['sub','low end'],{bands:2,slope:48,x:[90],mix:100},[THR(-26,6,15,70,{boost:1,lOut:-1}),THR(-14,1.5,30,150,{lOn:0})]),
- MB('Wide Open Glue','Bus',['soft knee','glue'],{bands:4,slope:36,x:[110,500,5000],mix:100},[THR(-16,1.8,40,.5,{knee:1}),THR(-16,1.8,35,.5,{knee:1}),THR(-16,1.8,30,.5,{knee:1}),THR(-16,1.8,25,.5,{knee:1})]),
+ MB('Wide Open Glue','Bus',['soft knee','glue'],{bands:4,slope:36,x:[110,500,5000],mix:100},[THR(-22,1.8,40,.5,{knee:1}),THR(-24,1.8,35,.5,{knee:1}),THR(-24,1.8,30,.5,{knee:1}),THR(-26,1.8,25,.5,{knee:1})]),
  MB('Squash And Release','Creative',['heavy','squash'],{bands:4,slope:48,x:[100,450,4500],mix:55},[THR(-34,10,2,60,{boost:6}),THR(-34,10,1.5,50,{boost:6}),THR(-34,10,1,40,{boost:6}),THR(-34,10,.5,30,{boost:6})]),
  MB('Single Band Limiter','Utility',['limiter','1 band'],{bands:1,slope:36,mix:100},[THR(-10,20,5,100,{lOn:1,lOut:-0.3})]),
- MB('Hands Up Glue','Bus',['hands up','glue','dpc'],{bands:4,slope:12,x:[100,400,8000],mix:100},[THR(-22,7.35,40,15,{pat:1,str:50,sel:0}),THR(-24,3.31,10,5,{pat:2,str:50,sel:1}),THR(-28,Infinity,40,156,{pat:3,str:50,sel:2,lOut:-1}),THR(-26,4.4,10,.5,{pat:4,str:50,sel:3})]),
+ MB('Hands Up Glue','Bus',['hands up','glue','dpc'],{bands:4,slope:12,x:[100,400,8000],mix:100},[THR(-22,7.35,40,15,{pat:1,str:50,sel:0}),THR(-24,3.31,10,5,{pat:2,str:50,sel:1}),THR(-22,Infinity,40,156,{pat:3,str:50,sel:2,lOut:-1}),THR(-26,4.4,10,.5,{pat:4,str:50,sel:3})]),
  MB('Mono Bass Safe','Utility',['bass','mono-friendly'],{bands:2,slope:36,x:[120],mix:100},[THR(-22,4,12,70,{boost:1}),{cOn:0}])
 ];
 function SC(name,type,tags,o){const p={'s.on':1};for(const k in o)p['s.'+k]=o[k];return{name,type,tags,page:1,p,factory:true}}
@@ -966,16 +974,18 @@ function renderSources(fs){const N=Math.round(8*SPB*fs),mk=()=>({L:new Float32Ar
  for(let b=1;b<8;b+=2)add(C,b*SPB,.25,(t,k)=>(nz(k*3+b)*Math.exp(-t*16)*.55+Math.sin(2*Math.PI*190*t)*Math.exp(-t*28)*.3)*.7,1,1);
  const ch=[[57,60,64],[53,57,60],[60,64,67],[55,59,62]];ch.forEach((nt,c)=>{nt.forEach(m=>{for(let v=0;v<7;v++){const f=440*Math.pow(2,(m-69)/12)*Math.pow(2,(v-3)*.06/12*2);let ph=(v*.137)%1;const dt=f/fs,pan=(v-3)/3*.8;add(CH,c*2*SPB,2*SPB*.96,(t,k)=>{ph+=dt;if(ph>=1)ph-=1;const s=2*ph-1-pblep(ph,dt);const env=Math.min(1,t/.012)*Math.min(1,(2*SPB*.96-t)/.05)*(.55+.45*Math.exp(-t*3));return s*env*.05},Math.cos((pan+1)*Math.PI/4)*1.2,Math.sin((pan+1)*Math.PI/4)*1.2)}})});
  const mel=[69,0,72,0,76,0,72,69,0,67,0,72,0,76,79,0,81,0,79,0,76,0,72,76,0,74,0,72,69,0,67,72];
- mel.forEach((m,k)=>{if(!m)return;for(let v=0;v<5;v++){const f=440*Math.pow(2,(m-69)/12)*Math.pow(2,(v-2)*.07/12*2);let ph=(v*.21)%1;const dt=f/fs,pan=(v-2)/2*.7;add(LD,k*SPB/4,.3,(t,kk)=>{ph+=dt;if(ph>=1)ph-=1;const s=2*ph-1-pblep(ph,dt);return s*Math.min(1,t/.004)*Math.exp(-t*7)*.1},Math.cos((pan+1)*Math.PI/4),Math.sin((pan+1)*Math.PI/4))}});
- const mix=(parts)=>{const o={L:new Float32Array(N),R:new Float32Array(N)};parts.forEach(([b,g])=>{for(let i=0;i<N;i++){o.L[i]+=b.L[i]*g;o.R[i]+=b.R[i]*g}});let pk=0;for(let i=0;i<N;i++)pk=Math.max(pk,Math.abs(o.L[i]),Math.abs(o.R[i]));const k=.8/(pk||1);for(let i=0;i<N;i++){o.L[i]*=k;o.R[i]*=k}return o};
+ mel.forEach((m,k)=>{if(!m)return;for(let v=0;v<5;v++){const f=440*Math.pow(2,(m-69)/12)*Math.pow(2,(v-2)*.07/12*2);let ph=(v*.21)%1;const dt=f/fs,pan=(v-2)/2*.7;add(LD,k*SPB/4,.40,(t,kk)=>{ph+=dt;if(ph>=1)ph-=1;const s=2*ph-1-pblep(ph,dt);return s*Math.min(1,t/.004)*Math.min(1,(.40-t)/.03)*(.35+.65*Math.exp(-t*6))*.1},Math.cos((pan+1)*Math.PI/4),Math.sin((pan+1)*Math.PI/4))}});
+ const mix=(parts,rmsDb)=>{const o={L:new Float32Array(N),R:new Float32Array(N)};parts.forEach(([b,g])=>{for(let i=0;i<N;i++){o.L[i]+=b.L[i]*g;o.R[i]+=b.R[i]*g}});let pk=0,ss=0;for(let i=0;i<N;i++){pk=Math.max(pk,Math.abs(o.L[i]),Math.abs(o.R[i]));ss+=(o.L[i]*o.L[i]+o.R[i]*o.R[i])*.5}
+  let k=Math.pow(10,rmsDb/20)/Math.sqrt(ss/N+1e-12);if(pk*k>.97)k=.97/pk;for(let i=0;i<N;i++){o.L[i]*=k;o.R[i]*=k}return o};
  const kfeed=new Float32Array(N);for(let i=0;i<N;i++)kfeed[i]=K.L[i];
- SRC={mix:mix([[K,1],[B,.9],[H,.8],[C,.8],[CH,1],[LD,.6]]),kb:mix([[K,1],[B,1]]),lead:mix([[LD,1]]),drums:mix([[K,1],[H,1.2],[C,1]]),kfeed,ev,N};SRCFS=fs}
-let fileBuf=null,srcKind='mix';
+ /* realistic levels: lead about -18 dBFS RMS, full mix about -14, kick+bass -14, drums -16 (peak capped at -0.3 dBFS) */
+ SRC={mix:mix([[K,1],[B,.9],[H,.8],[C,.8],[CH,1],[LD,.6]],-14),kb:mix([[K,1],[B,1]],-14),lead:mix([[LD,1]],-18),drums:mix([[K,1],[H,1.2],[C,1]],-16),kfeed,ev,N};SRCFS=fs}
+let fileBuf=null,srcKind='mix',srcG=D2L(6);
 const blkL=new Float32Array(2048),blkR=new Float32Array(2048),fdL=new Float32Array(2048),fdR=new Float32Array(2048);
 const srcObj={fl:fdL,fr:fdR,ev:null,loopN:0};
 function fillSrc(n,L,R){const pos=eng.tpos;const fs=eng.fs;if(!SRC||SRCFS!==fs)renderSources(fs);const N=SRC.N;srcObj.ev=SRC.ev;srcObj.loopN=N;
  const useFile=srcKind==='file'&&fileBuf,b=useFile?null:SRC[srcKind];
- for(let i=0;i<n;i++){let l,r;if(useFile){const s=fileBuf[(pos+i)%fileBuf.length];l=r=s*.8}else{const k=(pos+i)%N;l=b.L[k];r=b.R[k]}L[i]=l;R[i]=r;
+ for(let i=0;i<n;i++){let l,r;if(useFile){const s=fileBuf[(pos+i)%fileBuf.length];l=r=s*.8}else{const k=(pos+i)%N;l=b.L[k];r=b.R[k]}if(srcG!==1){l*=srcG;r*=srcG;if(Math.abs(l)>.98)l=Math.tanh(l/.98)*.98;if(Math.abs(r)>.98)r=Math.tanh(r/.98)*.98}L[i]=l;R[i]=r;
   const fk=!useFile&&$('#rigFeed').value==='0';fdL[i]=fk?SRC.kfeed[(pos+i)%N]:l;fdR[i]=fk?SRC.kfeed[(pos+i)%N]:r}}
 let ctx=null,node=null,playing=false;
 function startAudio(){if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();eng.prepare(ctx.sampleRate);syncUI();renderSources(ctx.sampleRate);
@@ -986,8 +996,10 @@ $('#rigPlay').onclick=()=>playing?stopAudio():startAudio();
 $('#rigSrc').onchange=e=>{srcKind=e.target.value;if(srcKind==='file'&&!fileBuf)$('#rigFileIn').click()};
 $('#rigFile').onclick=()=>$('#rigFileIn').click();
 $('#rigFeed').onchange=()=>syncUI();
+$('#rigLvl').onchange=e=>{srcG=D2L(+e.target.value)};
+$('#rigLM').onclick=()=>{eng.lm=!eng.lm;$('#rigLM').classList.toggle('on',eng.lm);$('#rigLM').setAttribute('aria-pressed',eng.lm?'true':'false')};
 $('#rigFileIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const c=new (window.AudioContext||window.webkitAudioContext)();const b=await c.decodeAudioData(await f.arrayBuffer());const d=b.getChannelData(0),m=new Float32Array(d.length);let pk=0;for(let i=0;i<d.length;i++){m[i]=d[i];pk=Math.max(pk,Math.abs(d[i]))}const k=pk>0?.9/pk:1;for(let i=0;i<m.length;i++)m[i]*=k;fileBuf=m;srcKind='file';$('#rigSrc').value='file';toast('Loaded '+f.name.slice(0,30));c.close()}catch(err){toast('Could not read that file')}};
-function runSynth(dt){const fs=eng.fs;let left=Math.round(fs*dt);while(left>0){const n=Math.min(2048,left);left-=n;fillSrc(n,blkL,blkR);eng.process(blkL,blkR,n,srcObj)}}
+function runSynth(dt,cap){const fs=eng.fs;let left=Math.round(fs*dt),o=0;while(left>0){const n=Math.min(2048,left);left-=n;fillSrc(n,blkL,blkR);eng.process(blkL,blkR,n,srcObj);if(cap){cap.set(blkL.subarray(0,n),o);o+=n}}}
 
 /* ============ Sync UI from state ============ */
 const LINKRE=/^s\.([lh])(Str|Atk|AtkC|Hold|Rel|RelC)$/;
@@ -1022,11 +1034,11 @@ function openModal(title,body,foot,wide){modal.innerHTML='';modal.hidden=false;c
 function closeModal(){modal.hidden=true;modal.innerHTML=''}
 modal.addEventListener('pointerdown',e=>{if(e.target===modal)closeModal()});
 const btn=(t,fn,c)=>{const b=el('button','btn'+(c?' '+c:''),t);b.onclick=fn;return b};
-function applySettings(){app.dataset.look=settings.look;T=tokens();settings.sys=sys;try{localStorage.setItem(KEY+'-settings',JSON.stringify(settings))}catch(e){}}
+function applySettings(){app.dataset.look=settings.look;T=tokens();settings.sys=sys;settings.sv=3;try{localStorage.setItem(KEY+'-settings',JSON.stringify(settings))}catch(e){}}
 $('#bSettings').onclick=()=>{const b=openModal('Settings','<label><input type="checkbox" id="sTips"> Info bubbles after hovering for about one second</label><label><input type="checkbox" id="sPow"> Power saving (redraw at 16 frames per second)</label><label>Colour look <select id="sLook"><option value="C">Look C, charcoal and white (default)</option><option value="A">Look A, neon navy</option><option value="B">Look B, purple soda pop</option></select></label><p style="color:var(--dim)">Looks only change colours. The wood, cat logo, bubbles and meters stay the same. The choice is saved with the plugin settings, not with presets.</p><button class="btn" id="sReset">Reset window size to 100%</button>');
  b.querySelector('#sTips').checked=settings.tips;b.querySelector('#sPow').checked=settings.power;b.querySelector('#sLook').value=settings.look;
  b.querySelector('#sTips').onchange=e=>{settings.tips=e.target.checked;applySettings()};b.querySelector('#sPow').onchange=e=>{settings.power=e.target.checked;applySettings()};b.querySelector('#sLook').onchange=e=>{settings.look=e.target.value;applySettings()};b.querySelector('#sReset').onclick=()=>{setScale(s0);toast('Window reset to 100%')}};
-function openSystem(){const b=openModal('System','<label><input type="checkbox" id="yEco"> ECO mode: lighter on the CPU (crossover slope capped at 48 dB per octave, spectrum drawn at half rate)</label><label>Lookahead <input type="range" id="yLa" min="1" max="7.5" step="0.5" style="flex:1"> <b id="yLaV"></b></label><div style="color:var(--dim);margin:-2px 0 6px">Lookahead of the band limiters and the master limiter, 1 to 7.5 ms (default 7.5). Longer is cleaner on fast peaks, shorter is lower latency. Reported latency: <span id="yLat"></span>.</div><label><input type="checkbox" id="yRo"> Local readouts: numbers above the knobs</label><label><input type="checkbox" id="yAuto"> Autogain: add make-up gain to each band to offset what its compressor takes off</label><label><input type="checkbox" id="ySteps"> Ratio in steps: the ratio snaps to whole numbers only (1, 2, 3 and so on, infinity above 20)</label><label><input type="checkbox" id="yRms"> RMS detector in the band compressors (default is peak)</label>',[btn('Close',closeModal)],'560px');
+function openSystem(){const b=openModal('System','<label><input type="checkbox" id="yEco"> ECO mode: lighter on the CPU (crossover slope capped at 48 dB per octave, spectrum drawn at half rate)</label><label>Lookahead <input type="range" id="yLa" min="1" max="7.5" step="0.5" style="flex:1"> <b id="yLaV"></b></label><div style="color:var(--dim);margin:-2px 0 6px">Lookahead of the band limiters and the master limiter, 1 to 7.5 ms (default 7.5). Longer is cleaner on fast peaks, shorter is lower latency. Reported latency: <span id="yLat"></span>.</div><label><input type="checkbox" id="yRo"> Local readouts: numbers above the knobs</label><label><input type="checkbox" id="yAuto"> Autogain (default on): make up the gain the band compressors take off, so wet and dry sit at similar loudness</label><label><input type="checkbox" id="ySteps"> Ratio in steps: the ratio snaps to whole numbers only (1, 2, 3 and so on, infinity above 20)</label><label><input type="checkbox" id="yRms"> RMS detector in the band compressors (default is peak)</label>',[btn('Close',closeModal)],'560px');
  const set=()=>{b.querySelector('#yLaV').textContent=sys.la.toFixed(1)+' ms';b.querySelector('#yLat').textContent=(eng.lat/eng.fs*1000).toFixed(1)+' ms'};
  [['yEco','eco'],['yRo','ro'],['yAuto','auto'],['ySteps','steps'],['yRms','rms']].forEach(([id,k])=>{const c=b.querySelector('#'+id);c.checked=sys[k];c.onchange=()=>{sys[k]=c.checked;applySettings();syncUI()}});
  const r=b.querySelector('#yLa');r.value=sys.la;r.oninput=()=>{sys.la=+r.value;applySettings();syncUI();set()};set()}
@@ -1039,7 +1051,7 @@ $('#bGuide').onclick=()=>openModal('Guide',`<div class="gcols"><div><h3 class="g
 <li><b>Behaviour is modelled on public manuals;</b> the look, names, text and colours are ours. Not affiliated with anyone.</li></ul>
 <h3 class="gh">Where to start</h3><ul class="gl"><li>Page 1: aim for an input level of about -6 dB (cyan tick on the Pre meter), load Start Here, play the Full mix loop, lower the Threshold sliders until Gain Red. moves, then press <kbd>B</kbd> to compare.</li><li>Page 2: load Offbeat Pumper, switch the page lamp on, press Play. Drag the envelope points in the Low or Hi view.</li></ul>
 <h3 class="gh">Keys</h3><table><tr><td><kbd>P</kbd></td><td>Flip page</td></tr><tr><td><kbd>Space</kbd></td><td>Play or stop the preview</td></tr><tr><td><kbd>B</kbd></td><td>Bypass (A/B)</td></tr><tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Previous or next preset</td></tr><tr><td>Knobs</td><td>Drag, wheel, arrows; Shift for fine; double-click resets</td></tr></table></div>
-<div><h3 class="gh">What is verified and what is ours</h3><p><span class="vt">Verified from the public manuals and the screenshots we were given:</span> the control set of both pages; 1 to 4 bands, crossover slope menu from 6 to 96 dB/oct (default 36), per band Mute and Solo, Mix, pre and post meters with VU or Density, Pan and Gain; per band threshold slider, gain reduction meter, compressor with ratio 1:1 to inf, hard or soft knee, attack, release (AUTO below 1 ms), boost; limiter with release and output; Scope, Gain Red. and DPC views; System page with ECO, lookahead 1 to 7.5 ms (default 7.5), local readouts, autogain and ratio in steps (whole numbers only). Signal chain as in the manual notes: input gain per band, band compressor (autogain), band limiter, DPC (before or after the band limiter), band output, main Mix, Output Gain, master limiter, post limiter gain. Mix 100% is fully wet. Scope: red original, green compressed, grey overlap. Best input level about -6 dB. Trance Master 2 uses the values from our JPurrr-8000 spec. Page 2: trigger modes, Sens, filter types, view buttons, split frequency, listen, low and high volume, two envelopes with strength, attack curve, hold and release curve, Link, EQ1 and EQ2.</p>
+<div><h3 class="gh">What is verified and what is ours</h3><p><span class="vt">Verified from the public manuals and the screenshots we were given:</span> the control set of both pages; 1 to 4 bands, crossover slope menu from 6 to 96 dB/oct (default 36), per band Mute and Solo, Mix, pre and post meters with VU or Density, Pan and Gain; per band threshold slider, gain reduction meter, compressor with ratio 1:1 to inf, hard or soft knee, attack, release (AUTO below 1 ms), boost; limiter with release and output; Scope, Gain Red. and DPC views; System page with ECO, lookahead 1 to 7.5 ms (default 7.5), local readouts, autogain and ratio in steps (whole numbers only). Signal chain as in the manual notes: input gain per band, band compressor (autogain), band limiter, DPC (before or after the band limiter), band output, main Mix, Output Gain, master limiter, post limiter gain. Mix 100% is fully wet. Scope: red original, green compressed, grey overlap. Best input level about -6 dB. Autogain is on by default and makes up each band's gain reduction so wet and dry sit at similar loudness (ours: 80% of the slow average gain reduction while the band works). The preview rig has Level match and a live Comp vs Dry readout (RMS change, crest, LU at equal peak). Test sources run at realistic levels (lead -18 dBFS RMS, mix -14). Trance Master 2 uses the values from our JPurrr-8000 spec. Page 2: trigger modes, Sens, filter types, view buttons, split frequency, listen, low and high volume, two envelopes with strength, attack curve, hold and release curve, Link, EQ1 and EQ2.</p>
 <p><span class="ou">Our own choices (the manuals do not give exact maths):</span> every number inside the DSP. Crossovers are Linkwitz-Riley with all-pass compensation (checked flat in tests). Compressor: peak detector (RMS in System), log-domain attack and release, soft knee 6 dB. Limiter: lookahead with sliding minimum. Auto release: 30 ms plus 8 ms per dB of gain reduction. Autogain formula: half of the static gain reduction at 0 dBFS. The In and Out handles in the graph trim a band before and after its processing. DPC pattern maths: gain up to 24 dB at 100% strength, 4 beats per cycle. Sidechain envelope curves, Sens scale (-6 to -60 dBFS), the Notch and Steep filter types, Host Sync offset, and the 24 dB per octave split are ours. The two pages run in series. Main Mix default is 50% (house rule).</p>
 <p>Signal flow, page 1: input gain and pan, crossover, per band (trim, compressor, DPC, limiter, Mix, trim, mute and solo), sum, main Mix, output gain and pan, master limiter. Page 2: trigger, EQ, detector, two envelopes, split, volumes, listen, output gain.</p></div></div>`,null,'1100px');
 $('#bAbout').onclick=()=>openModal('About & Support',`<p><b>${esc(NAME)}</b> by Studio 87, version ${VERSION} (design mockup). A free open source multiband compressor with a multiband sidechain page. Licence AGPL-3.0-or-later. Collects nothing and never uses the network.</p>
@@ -1054,7 +1066,7 @@ function openBrowser(){const pg=page;pbSel=curName[pg];const wrap=el('div','');w
  const q=b.querySelector('#pbQ');q.value=pbQ;q.oninput=()=>{pbQ=q.value;renderList()};
  function renderList(){const ch=b.querySelector('#pbChips');ch.innerHTML='';['All'].concat(TYPES[pg]).forEach(t=>{const c=el('button','chip'+(pbType===t?' on':''),t);c.onclick=()=>{pbType=t;renderList()};ch.appendChild(c)});
   const l=b.querySelector('#pbList');l.innerHTML='';const qq=pbQ.toLowerCase();
-  allPresets(pg).filter(p=>(pbType==='All'||p.type===pbType)&&(!qq||(p.name+' '+p.type+' '+p.tags.join(' ')).toLowerCase().includes(qq))).forEach(p=>{const it=el('div','item'+(pbSel===p.name?' sel':''),'<span>'+esc(p.name)+'</span><small>'+(p.factory?p.type:'mine &middot; '+p.type)+'</small>');it.onclick=()=>{pbSel=p.name;renderList()};it.ondblclick=()=>{loadPreset(p);closeModal()};l.appendChild(it)});
+  allPresets(pg).filter(p=>(pbType==='All'||p.type===pbType)&&(!qq||(p.name+' '+p.type+' '+p.tags.join(' ')).toLowerCase().includes(qq))).forEach(p=>{const it=el('div','item'+(pbSel===p.name?' sel':''),'<span>'+esc(p.name)+'</span><small>'+(p.factory?p.type:'mine &middot; '+p.type)+'</small>');it.onclick=()=>{pbSel=p.name;loadPreset(p);renderList()};it.ondblclick=()=>{loadPreset(p);closeModal()};l.appendChild(it)});
   const p=allPresets(pg).find(x=>x.name===pbSel),s=b.querySelector('#pbSide');s.innerHTML='';if(!p)return;
   s.innerHTML='<h3 style="margin:0 0 4px">'+esc(p.name)+'</h3><div style="color:var(--dim)">'+p.type+(p.tags.length?' &middot; '+p.tags.map(esc).join(', '):'')+(p.factory?' &middot; factory':' &middot; yours')+'</div>';
   const row=el('div','');row.style.marginTop='12px';const mk=(t,f)=>{const x=btn(t,f);x.style.margin='0 6px 6px 0';row.appendChild(x)};
@@ -1110,7 +1122,11 @@ document.addEventListener('keydown',e=>{if(!modal.hidden){if(e.key==='Escape')cl
 /* ============ Frame loop ============ */
 let visible=true,lastT=0,frameN=0;
 function drawSide2(){}
-function draw(){frameN++;const half=sys.eco&&(frameN&1);
+let rdLast='';
+function drawReadout(){const e=eng,r=10*Math.log10((e.rdC+1e-12)/(e.rdD+1e-12));const cd=L2D(e.rdPkD)-10*Math.log10(e.rdD+1e-12),cc=L2D(e.rdPkC)-10*Math.log10(e.rdC+1e-12);
+ const ok=e.rdD>1e-8;const t=ok?'Comp vs Dry  RMS <b>'+(r>=0?'+':'')+r.toFixed(1)+' dB</b>  Crest '+cd.toFixed(1)+' to '+cc.toFixed(1)+' dB  <b>'+((cd-cc)>=0?'+':'')+(cd-cc).toFixed(1)+' LU</b> at equal peak'+(e.lm?'  (matched)':''):'Comp vs Dry  waiting for signal';
+ if(t!==rdLast){rdLast=t;$('#rigRd').innerHTML=t}}
+function draw(){frameN++;drawReadout();const half=sys.eco&&(frameN&1);
  if(page===0){if(st['m.fft']>0&&!half){const fm=st['m.fft'];if(fm===1||fm===2)eng.sp.pre.update(eng.fs);if(fm===1||fm===3)eng.sp.post.update(eng.fs)}
   drawVU(gPre,eng.pre,'pre');drawVU(gPost,eng.post,'post');drawGraph();drawStrips();limGr.textContent='Limiter GR '+(-(eng.mGr||0)).toFixed(1)+' dB'}
  else{if(!half)eng.sp.feed.update(eng.fs);sysHist[sysHi]=L2D(eng.scEnvF||0);sysHi=(sysHi+1)%sysHist.length;drawS();
@@ -1124,7 +1140,7 @@ document.title=NAME;
 $('#footTxt').textContent='Studio 87 · '+NAME+' v'+VERSION+' design mockup';
 $('.brand').dataset.tip=NAME+' by Studio 87: one plugin, two pages.';
 for(let i=0;i<4;i++)pats[i]=PATS[0].f();
-loadPreset(FACT[1][0]);st['s.on']=0;loadPreset(FACT[0][0]);
+loadPreset(FACT[1][0]);st['s.on']=0;loadPreset(FACT[0].find(p=>p.name==='Trance Master 2')||FACT[0][0]);
 setPage(0);
 runSynth(1.5);requestAnimationFrame(frameLoop);
 window.__mp={st,eng,syncUI,setPage,loadPreset,FACT,pats,sys,setScale,runSynth,draw,startAudio,stopAudio,get sc(){return sc},get page(){return page},curName,userP,PS,ctls,get playing(){return playing}};
