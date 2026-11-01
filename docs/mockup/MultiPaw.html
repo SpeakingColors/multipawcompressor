@@ -554,12 +554,14 @@ knob(limBox,{id:'m.postG',label:'Post',size:30,fmt:v=>fDb(v),tip:'Post limiter g
 knob(limBox,{id:'m.ceil',label:'Ceil',size:30,fmt:v=>v.toFixed(1),tip:'Master limiter ceiling in dB. Nothing leaves the plugin above this level (the sound is delayed by the lookahead so peaks are caught in time). Range -12 to 0 dB.'});
 const limGr=el('div','cap','');limGr.style.cssText='font-size:10px;text-align:center;color:var(--dim);text-transform:none;letter-spacing:.4px';limGr.dataset.tip='Master limiter gain reduction right now, in dB.';colR.appendChild(limGr);
 /* ---- centre ---- */
+let mixLock=false;
 const ctr=el('div','ctr');
 const gtop=el('div','gtop');ctr.appendChild(gtop);
 selectBox(gtop,'m.bands',['1 Band','2 Bands','3 Bands','4 Bands'].map((t,i)=>t),'Number of bands: 1 to 4. Drag the vertical dividers in the graph to place the crossovers. Unused bands are greyed out.',null,1);
 selectBox(gtop,'m.slope',SLOPE_LAB,'Crossover slope: how steeply the bands are separated, from 6 dB per octave (gentle) to 96 dB per octave (very steep). Default 36. Steeper slopes keep bands cleaner but use more CPU and ring slightly more. Linkwitz-Riley type, so the bands add back flat.');
 const mixw=el('div','mixwrap');gtop.appendChild(mixw);
 knob(mixw,{id:'m.mix',label:'Mix',size:36,cls:'h',fmt:fPct,tip:'Main Mix: dry against compressed, for parallel ("New York") compression. 100% is fully compressed. 50% is our default: it keeps the punch of the original and adds the weight of the squashed copy. The dry copy is time aligned.'});
+const ml=el('button','tgb','Keep');ml.setAttribute('aria-pressed','false');ml.dataset.tip='Keep Mix: when on, loading a preset leaves the Mix knob where you put it, so you can compare presets at the same Mix. When off, each preset sets its own Mix (Trance Master 2 uses 75%, Bass Tight 100%).';ml.onclick=()=>{mixLock=!mixLock;ml.classList.toggle('on',mixLock);ml.setAttribute('aria-pressed',mixLock?'true':'false');toast(mixLock?'Presets keep your Mix':'Presets set their own Mix')};mixw.appendChild(ml);
 const mn=el('div','mixnote','New York tip: 50% Mix with fast, deep compression');mn.dataset.tip='New York compression: blend a heavily squashed copy under the untouched sound. Try low thresholds, ratio 6:1 or more, fast attack, and Mix around 30 to 50%.';mixw.appendChild(mn);
 const gright=el('div','gright');gtop.appendChild(gright);
 selectBox(gright,'m.fft',['FFT off','In + Out FFT','Input FFT','Output FFT'],'Spectrum overlay behind the bands. In + Out shows the input in grey and the output in green. Scale on the right is dBFS.');
@@ -954,9 +956,9 @@ const curName=['Start Here','Offbeat Pumper'];let page=0;
 const allPresets=pg=>FACT[pg].concat(userP.filter(u=>u.page===pg));
 function curPreset(pg=page){return allPresets(pg).find(x=>x.name===curName[pg])||FACT[pg][0]}
 function applyPatsFromIdx(){for(let i=0;i<4;i++)pats[i]=PATS[st['b'+i+'.patI']].f()}
-function loadPreset(p){const pg=p.page;pageKeys(pg).forEach(k=>st[k]=DEF[k]);if(pg===0)for(let i=0;i<4;i++)pats[i]=PATS[0].f();
- Object.assign(st,p.p);if(pg===0){if(p.pats){p.pats.forEach((a,i)=>pats[i]=a.map(q=>q.slice()))}else applyPatsFromIdx()}
- if(pg===1)st['s.on']=1;if(pg===0)st['m.on']=1;curName[pg]=p.name;syncUI();toast('Loaded '+p.name)}
+function loadPreset(p){const pg=p.page;const keepMix=(pg===0&&mixLock)?st['m.mix']:null;pageKeys(pg).forEach(k=>st[k]=DEF[k]);if(pg===0)for(let i=0;i<4;i++)pats[i]=PATS[0].f();
+ Object.assign(st,p.p);if(keepMix!==null)st['m.mix']=keepMix;if(pg===0){if(p.pats){p.pats.forEach((a,i)=>pats[i]=a.map(q=>q.slice()))}else applyPatsFromIdx()}
+ if(pg===1)st['s.on']=1;if(pg===0)st['m.on']=1;curName[pg]=p.name;syncUI();toast('Loaded '+p.name+(pg===0?' (Mix '+Math.round(st['m.mix'])+'%)':''))}
 function snapshot(pg){const p={};pageKeys(pg).forEach(k=>p[k]=st[k]);return p}
 function isDirty(){const c=curPreset(),pg=page,keys=pageKeys(pg);for(const k of keys){if(k==='m.on'||k==='s.on'||/view$|zoom$|\.fft$|\.vu$|\.span$/.test(k))continue;const base=(k in c.p)?c.p[k]:DEF[k];if(Math.abs(base-st[k])>1e-6)return true}
  if(pg===0){const ref=c.pats?c.pats:[0,1,2,3].map(i=>PATS[(c.p['b'+i+'.patI']||0)].f());if(JSON.stringify(ref)!==JSON.stringify(pats))return true}return false}
