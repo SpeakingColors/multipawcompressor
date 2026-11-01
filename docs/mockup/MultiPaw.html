@@ -383,7 +383,8 @@ class Engine{
      if(++S.aN>=this.colN){S.scI[S.sc]=S.aI;S.scO[S.sc]=S.aO;S.scG[S.sc]=S.aG;S.sc=(S.sc+1)%480;S.aI=S.aO=S.aG=0;S.aN=0}
      if(audible){wl+=al;wr+=ar}dryl+=dBl*p.outG;dryr+=dBr*p.outG}
     /* main Mix: dry bands (aligned) against wet bands */
-    ol=dryl*(1-this.mMix)+wl*this.mMix;orr=dryr*(1-this.mMix)+wr*this.mMix;
+    const tdl=this.mixDry[0].proc(xl,this.LA-1),tdr=this.mixDry[1].proc(xr,this.LA-1);   /* true dry: the input itself, delayed like the wet path (the crossover bands are phase shifted, so summing them is not a clean dry) */
+    ol=tdl*(1-this.mMix)+wl*this.mMix;orr=tdr*(1-this.mMix)+wr*this.mMix;
     ol*=this.gOut;orr*=this.gOut;
     const M=this.mLL;M.proc(ol,orr,this.mCeil,this.mKr,this.mLimOn);ol=M.ol*this.gPost;orr=M.or*this.gPost;this.mGr=this.mLimOn?M.gr:0;
     /* live Compressed vs Dry readout (dry = input after input gain; both about 0.5 s RMS) and the preview-only Level match */
