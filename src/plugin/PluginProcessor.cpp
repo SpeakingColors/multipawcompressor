@@ -112,6 +112,7 @@ void MultiPawProcessor::loadPatternsFromState()
 
 void MultiPawProcessor::prepareToPlay (double sampleRate, int)
 {
+    sampleRateNow = sampleRate;
     engine.prepare (sampleRate);
     for (int i = 0; i < mp::kNumParams; ++i) vals[i] = raw[(size_t) i]->load();
     mp::applyParams (vals, mbc, sc, bypassNow);
@@ -152,7 +153,7 @@ void MultiPawProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& mi
         {
             host.playing = pos->getIsPlaying();
             if (auto q = pos->getPpqPosition()) host.ppq = *q;
-            if (auto b = pos->getBpm()) host.bpm = *b;
+            if (auto b = pos->getBpm()) { host.bpm = *b; bpmNow.store (*b); }
         }
     midiOffsets.clear();
     for (const auto m : midi) if (m.getMessage().isNoteOn()) midiOffsets.push_back (m.samplePosition);
@@ -162,9 +163,20 @@ void MultiPawProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& mi
     auto sideBus = getBusBuffer (buffer, true, 1);
     if (sideBus.getNumChannels() > 0) { scL = sideBus.getReadPointer (0); scR = sideBus.getReadPointer (sideBus.getNumChannels() > 1 ? 1 : 0); }
 
+    {
+        const float* il = buffer.getReadPointer (0); const float* ir = buffer.getReadPointer (1);
+        int w = ringPos.load (std::memory_order_relaxed);
+        for (int i = 0; i < n; ++i) { ringPre[(size_t) w] = 0.5f * (il[i] + ir[i]); w = (w + 1) & (kRing - 1); }
+    }
     engine.process (buffer.getWritePointer (0), buffer.getWritePointer (1), n, scL, scR, host);
+    {
+        const float* ol = buffer.getReadPointer (0); const float* orr = buffer.getReadPointer (1);
+        int w = ringPos.load (std::memory_order_relaxed);
+        for (int i = 0; i < n; ++i) { ringPost[(size_t) w] = 0.5f * (ol[i] + orr[i]); w = (w + 1) & (kRing - 1); }
+        ringPos.store (w, std::memory_order_release);
+    }
 
-    for (int c = 0; c < 2; ++c) { meters.prePk[c].store (engine.prePk[c]); meters.postPk[c].store (engine.postPk[c]); }
+    for (int c = 0; c < 2; ++c) { meters.prePk[c].store (engine.prePk[c]); meters.postPk[c].store (engine.postPk[c]); meters.preMs[c].store (engine.preMs[c]); meters.postMs[c].store (engine.postMs[c]); }
     meters.limGr.store (engine.mGr);
     for (int b = 0; b < 4; ++b) { meters.bandGr[b].store (engine.bandGr[b]); meters.bandLvl[b].store (engine.bandLvl[b]); meters.bandLim[b].store (engine.bandLimGr[b]); }
     meters.scLow.store (engine.scLow); meters.scHigh.store (engine.scHigh);

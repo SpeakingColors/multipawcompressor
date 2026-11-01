@@ -51,10 +51,17 @@ public:
     // Meters for the editor (written on the audio thread, read by the editor timer).
     struct Meters
     {
-        std::atomic<float> prePk[2] { { 0 }, { 0 } }, postPk[2] { { 0 }, { 0 } }, limGr { 0 };
+        std::atomic<float> prePk[2] { { 0 }, { 0 } }, postPk[2] { { 0 }, { 0 } }, preMs[2] { { 0 }, { 0 } }, postMs[2] { { 0 }, { 0 } }, limGr { 0 };
         std::atomic<float> bandGr[4] { { 0 }, { 0 }, { 0 }, { 0 } }, bandLvl[4] { { -90 }, { -90 }, { -90 }, { -90 } }, bandLim[4] { { 0 }, { 0 }, { 0 }, { 0 } };
         std::atomic<float> scLow { 1 }, scHigh { 1 };
     } meters;
+
+    // Mono sample rings (input and output) for the spectrum view; written on the audio thread.
+    static constexpr int kRing = 4096;
+    std::array<float, kRing> ringPre {}, ringPost {};
+    std::atomic<int> ringPos { 0 };
+    double sampleRateNow = 48000.0;
+    std::atomic<double> bpmNow { 120.0 };
 
     // Dynamic pattern curves (DPC), nodes of the four bands: [x 0..1 of the cycle, y 0..1 (1 = untouched)].
     using Nodes = std::vector<std::pair<float, float>>;

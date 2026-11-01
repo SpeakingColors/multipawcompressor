@@ -1,0 +1,6390 @@
+[
+{
+"page": 0,
+"ctl": [
+{
+"kind": "seg",
+"pid": "m.vu",
+"idx": 0,
+"r": [
+71.66,
+66,
+30.16,
+24
+],
+"tip": "VU meter: smoothed level (RMS, 300 ms feel) with a thin peak tick.",
+"cls": "on",
+"text": "VU"
+},
+{
+"kind": "seg",
+"pid": "m.vu",
+"idx": 1,
+"r": [
+100.81,
+66,
+51.53,
+24
+],
+"tip": "Density meter: the pale bar is the peak, the solid bar is the average level. The gap between them shows how dense (squashed) the sound is.",
+"cls": "",
+"text": "Density"
+},
+{
+"kind": "knob",
+"pid": "m.inPan",
+"idx": -1,
+"r": [
+75.56,
+194,
+30,
+56
+],
+"tip": "Input pan: balance of the left and right channel before the compressor. Double-click for centre.",
+"cls": "kb",
+"text": "CPan",
+"label": "Pan",
+"labR": [
+81.02,
+237,
+19.08,
+13
+],
+"valR": [
+87.41,
+194,
+6.31,
+13
+],
+"knobR": [
+75.56,
+207,
+30,
+30
+],
+"color": "#CD92FE"
+},
+{
+"kind": "knob",
+"pid": "m.inG",
+"idx": -1,
+"r": [
+109.56,
+194,
+38.86,
+56
+],
+"tip": "Input gain in dB before the compressor. Range -24 to +24 dB. Double-click for 0.",
+"cls": "kb",
+"text": "0.0 dBGain dB",
+"label": "Gain dB",
+"labR": [
+109.56,
+237,
+38.86,
+13
+],
+"valR": [
+110.08,
+194,
+37.81,
+13
+],
+"knobR": [
+113.98,
+207,
+30,
+30
+],
+"color": "var(--accent)"
+},
+{
+"kind": "select",
+"pid": "m.bands",
+"idx": -1,
+"r": [
+172,
+60,
+69,
+24
+],
+"tip": "Number of bands: 1 to 4. Drag the vertical dividers in the graph to place the crossovers. Unused bands are greyed out.",
+"cls": "sel",
+"text": "1 Band2 Bands3 Bands4 Bands",
+"opts": [
+"1 Band",
+"2 Bands",
+"3 Bands",
+"4 Bands"
+],
+"off": 1
+},
+{
+"kind": "select",
+"pid": "m.slope",
+"idx": -1,
+"r": [
+249,
+60,
+83,
+24
+],
+"tip": "Crossover slope: how steeply the bands are separated, from 6 dB per octave (gentle) to 96 dB per octave (very steep). Default 36. Steeper slopes keep bands cleaner but use more CPU and ring slightly more. Linkwitz-Riley type, so the bands add back flat.",
+"cls": "sel",
+"text": "Filter 6dBFilter 12dBFilter 24dBFilter 36dBFilter 48dBFilter 60dBFilter 72dBFilter 84dBFilter 96dB",
+"opts": [
+"Filter 6dB",
+"Filter 12dB",
+"Filter 24dB",
+"Filter 36dB",
+"Filter 48dB",
+"Filter 60dB",
+"Filter 72dB",
+"Filter 84dB",
+"Filter 96dB"
+],
+"off": 0
+},
+{
+"kind": "knob",
+"pid": "m.mix",
+"idx": -1,
+"r": [
+489.29,
+50,
+85,
+36
+],
+"tip": "Main Mix: dry against compressed, for parallel (\"New York\") compression. 100% is fully compressed. 50% is our default: it keeps the punch of the original and adds the weight of the squashed copy. The dry copy is time aligned.",
+"cls": "kb h",
+"text": "75%Mix",
+"label": "Mix",
+"labR": [
+530.29,
+55,
+17.08,
+13
+],
+"valR": [
+530.29,
+68,
+44,
+13
+],
+"knobR": [
+489.29,
+50,
+36,
+36
+],
+"color": "var(--accent)"
+},
+{
+"kind": "select",
+"pid": "m.fft",
+"idx": -1,
+"r": [
+941.5,
+59.98,
+88,
+24
+],
+"tip": "Spectrum overlay behind the bands. In + Out shows the input in grey and the output in green. Scale on the right is dBFS.",
+"cls": "sel",
+"text": "FFT offIn + Out FFTInput FFTOutput FFT",
+"opts": [
+"FFT off",
+"In + Out FFT",
+"Input FFT",
+"Output FFT"
+],
+"off": 0
+},
+{
+"kind": "knob",
+"pid": "m.outPan",
+"idx": -1,
+"r": [
+1124.56,
+167,
+30,
+56
+],
+"tip": "Output pan after the bands are mixed. Double-click for centre.",
+"cls": "kb",
+"text": "CPan",
+"label": "Pan",
+"labR": [
+1130.02,
+210,
+19.08,
+13
+],
+"valR": [
+1136.41,
+167,
+6.31,
+13
+],
+"knobR": [
+1124.56,
+180,
+30,
+30
+],
+"color": "#CD92FE"
+},
+{
+"kind": "knob",
+"pid": "m.outG",
+"idx": -1,
+"r": [
+1158.56,
+167,
+38.86,
+56
+],
+"tip": "Output Gain in dB, after the main Mix and before the master limiter, so you can push the sound into the limiter for loudness. Range -24 to +24 dB.",
+"cls": "kb",
+"text": "0.0 dBGain dB",
+"label": "Gain dB",
+"labR": [
+1158.56,
+210,
+38.86,
+13
+],
+"valR": [
+1159.08,
+167,
+37.81,
+13
+],
+"knobR": [
+1162.98,
+180,
+30,
+30
+],
+"color": "var(--accent)"
+},
+{
+"kind": "power",
+"pid": "m.limOn",
+"idx": -1,
+"r": [
+1117.09,
+247,
+16,
+16
+],
+"tip": "Master output limiter on or off.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "m.postG",
+"idx": -1,
+"r": [
+1135.36,
+226,
+37.81,
+56
+],
+"tip": "Post limiter gain: a final gain after the master limiter, -12 to +12 dB. Raising it can push the output above the ceiling.",
+"cls": "kb",
+"text": "0.0 dBPost",
+"label": "Post",
+"labR": [
+1141.86,
+269,
+24.81,
+13
+],
+"valR": [
+1135.36,
+226,
+37.81,
+13
+],
+"knobR": [
+1139.27,
+239,
+30,
+30
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "m.ceil",
+"idx": -1,
+"r": [
+1175.17,
+226,
+30,
+56
+],
+"tip": "Master limiter ceiling in dB. Nothing leaves the plugin above this level (the sound is delayed by the lookahead so peaks are caught in time). Range -12 to 0 dB.",
+"cls": "kb",
+"text": "-0.3Ceil",
+"label": "Ceil",
+"labR": [
+1179.38,
+269,
+21.58,
+13
+],
+"valR": [
+1177.56,
+226,
+25.2,
+13
+],
+"knobR": [
+1175.17,
+239,
+30,
+30
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "b0.mix",
+"idx": -1,
+"r": [
+67,
+311,
+77,
+28
+],
+"tip": "Band Mix: dry against compressed for this band only. 100% is fully compressed.",
+"cls": "kb h",
+"text": "100%Mix",
+"label": "Mix",
+"labR": [
+100,
+312,
+17.08,
+13
+],
+"valR": [
+100,
+325,
+44,
+13
+],
+"knobR": [
+67,
+311,
+28,
+28
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "power",
+"pid": "b0.on",
+"idx": -1,
+"r": [
+322.5,
+317,
+16,
+16
+],
+"tip": "Band power: off lets the band pass unprocessed (it still goes through the crossover).",
+"cls": "pw",
+"text": ""
+},
+{
+"kind": "power",
+"pid": "b0.cOn",
+"idx": -1,
+"r": [
+67,
+426,
+16,
+16
+],
+"tip": "Compressor on or off for this band.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b0.rat",
+"idx": -1,
+"r": [
+108.53,
+404,
+50.41,
+60
+],
+"tip": "Compression ratio from 1:1 (nothing) to 1:inf (limiting). Level above the threshold is reduced by this ratio. With \"Ratio in steps\" in System it snaps to whole numbers (1:1, 2:1, 3:1 and so on).",
+"cls": "kb",
+"text": "1 : 4.74Ratio",
+"label": "Ratio",
+"labR": [
+119.67,
+451,
+28.11,
+13
+],
+"valR": [
+108.53,
+404,
+50.41,
+13
+],
+"knobR": [
+116.73,
+417,
+34,
+34
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "knob",
+"pid": "b0.atk",
+"idx": -1,
+"r": [
+71,
+464,
+44.11,
+54
+],
+"tip": "Attack: how fast the compressor reacts when the level goes over the threshold. Slow lets the front of a kick through (punch), fast squashes it. 0.1 ms to 100 ms.",
+"cls": "kb",
+"text": "0.50 msAttack",
+"label": "Attack",
+"labR": [
+74.89,
+505,
+36.33,
+13
+],
+"valR": [
+71,
+464,
+44.11,
+13
+],
+"knobR": [
+79.05,
+477,
+28,
+28
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "knob",
+"pid": "b0.rel",
+"idx": -1,
+"r": [
+127.59,
+464,
+44.11,
+54
+],
+"tip": "Release: how fast the compressor lets go. Below 1 ms it switches to AUTO: the time follows the signal (longer after deep compression). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "3.09 msRelease",
+"label": "Release",
+"labR": [
+128.47,
+505,
+42.36,
+13
+],
+"valR": [
+127.59,
+464,
+44.11,
+13
+],
+"knobR": [
+135.64,
+477,
+28,
+28
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "knob",
+"pid": "b0.boost",
+"idx": -1,
+"r": [
+184.19,
+464,
+37.81,
+54
+],
+"tip": "Boost: make-up gain after the compressor, 0 to +24 dB. It pushes into the band limiter. With Autogain in System, extra make-up is added for you.",
+"cls": "kb",
+"text": "+0.0dBBoost",
+"label": "Boost",
+"labR": [
+187.45,
+505,
+31.28,
+13
+],
+"valR": [
+184.19,
+464,
+37.81,
+13
+],
+"knobR": [
+189.09,
+477,
+28,
+28
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "power",
+"pid": "b0.lOn",
+"idx": -1,
+"r": [
+249,
+420,
+16,
+16
+],
+"tip": "Band limiter on or off. A lookahead limiter at the end of the band: nothing from this band goes above its Output level.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b0.lRel",
+"idx": -1,
+"r": [
+279,
+404,
+38.22,
+54
+],
+"tip": "Limiter release: how fast the limiter lets go. Below 1 ms it switches to AUTO (program dependent: longer after deep limiting). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "AUTORls",
+"label": "Rls",
+"labR": [
+289.06,
+445,
+18.09,
+13
+],
+"valR": [
+285.5,
+404,
+25.2,
+13
+],
+"knobR": [
+284.11,
+417,
+28,
+28
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "knob",
+"pid": "b0.lOut",
+"idx": -1,
+"r": [
+279,
+458,
+38.22,
+54
+],
+"tip": "Limiter output: the ceiling for this band in dB, -12 to 0. Together with Boost this is how loud the band gets.",
+"cls": "kb",
+"text": "+0dBOutput",
+"label": "Output",
+"labR": [
+279,
+499,
+38.22,
+13
+],
+"valR": [
+285.5,
+458,
+25.2,
+13
+],
+"knobR": [
+284.11,
+471,
+28,
+28
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "knob",
+"pid": "b0.zoom",
+"idx": -1,
+"r": [
+247,
+622,
+75,
+26
+],
+"tip": "Zoom the time axis of the Scope and Gain Red. views, 1x to 8x.",
+"cls": "kb h",
+"text": "4xZoom",
+"label": "Zoom",
+"labR": [
+278,
+622,
+25.75,
+13
+],
+"valR": [
+278,
+635,
+44,
+13
+],
+"knobR": [
+247,
+622,
+26,
+26
+],
+"color": "#6CC9F5"
+},
+{
+"kind": "knob",
+"pid": "b1.mix",
+"idx": -1,
+"r": [
+358.5,
+311,
+77,
+28
+],
+"tip": "Band Mix: dry against compressed for this band only. 100% is fully compressed.",
+"cls": "kb h",
+"text": "100%Mix",
+"label": "Mix",
+"labR": [
+391.5,
+312,
+17.08,
+13
+],
+"valR": [
+391.5,
+325,
+44,
+13
+],
+"knobR": [
+358.5,
+311,
+28,
+28
+],
+"color": "#02EBBA"
+},
+{
+"kind": "power",
+"pid": "b1.on",
+"idx": -1,
+"r": [
+614,
+317,
+16,
+16
+],
+"tip": "Band power: off lets the band pass unprocessed (it still goes through the crossover).",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "power",
+"pid": "b1.cOn",
+"idx": -1,
+"r": [
+358.5,
+426,
+16,
+16
+],
+"tip": "Compressor on or off for this band.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b1.rat",
+"idx": -1,
+"r": [
+400.03,
+404,
+50.41,
+60
+],
+"tip": "Compression ratio from 1:1 (nothing) to 1:inf (limiting). Level above the threshold is reduced by this ratio. With \"Ratio in steps\" in System it snaps to whole numbers (1:1, 2:1, 3:1 and so on).",
+"cls": "kb",
+"text": "1 : 4.60Ratio",
+"label": "Ratio",
+"labR": [
+411.17,
+451,
+28.11,
+13
+],
+"valR": [
+400.03,
+404,
+50.41,
+13
+],
+"knobR": [
+408.23,
+417,
+34,
+34
+],
+"color": "#02EBBA"
+},
+{
+"kind": "knob",
+"pid": "b1.atk",
+"idx": -1,
+"r": [
+362.5,
+464,
+44.11,
+54
+],
+"tip": "Attack: how fast the compressor reacts when the level goes over the threshold. Slow lets the front of a kick through (punch), fast squashes it. 0.1 ms to 100 ms.",
+"cls": "kb",
+"text": "40.0 msAttack",
+"label": "Attack",
+"labR": [
+366.39,
+505,
+36.33,
+13
+],
+"valR": [
+362.5,
+464,
+44.11,
+13
+],
+"knobR": [
+370.55,
+477,
+28,
+28
+],
+"color": "#02EBBA"
+},
+{
+"kind": "knob",
+"pid": "b1.rel",
+"idx": -1,
+"r": [
+419.97,
+464,
+42.36,
+54
+],
+"tip": "Release: how fast the compressor lets go. Below 1 ms it switches to AUTO: the time follows the signal (longer after deep compression). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "AUTORelease",
+"label": "Release",
+"labR": [
+419.97,
+505,
+42.36,
+13
+],
+"valR": [
+428.55,
+464,
+25.2,
+13
+],
+"knobR": [
+427.14,
+477,
+28,
+28
+],
+"color": "#02EBBA"
+},
+{
+"kind": "knob",
+"pid": "b1.boost",
+"idx": -1,
+"r": [
+475.69,
+464,
+37.81,
+54
+],
+"tip": "Boost: make-up gain after the compressor, 0 to +24 dB. It pushes into the band limiter. With Autogain in System, extra make-up is added for you.",
+"cls": "kb",
+"text": "+0.0dBBoost",
+"label": "Boost",
+"labR": [
+478.95,
+505,
+31.28,
+13
+],
+"valR": [
+475.69,
+464,
+37.81,
+13
+],
+"knobR": [
+480.59,
+477,
+28,
+28
+],
+"color": "#02EBBA"
+},
+{
+"kind": "power",
+"pid": "b1.lOn",
+"idx": -1,
+"r": [
+540.5,
+420,
+16,
+16
+],
+"tip": "Band limiter on or off. A lookahead limiter at the end of the band: nothing from this band goes above its Output level.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b1.lRel",
+"idx": -1,
+"r": [
+570.5,
+404,
+44.11,
+54
+],
+"tip": "Limiter release: how fast the limiter lets go. Below 1 ms it switches to AUTO (program dependent: longer after deep limiting). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "50.0 msRls",
+"label": "Rls",
+"labR": [
+583.5,
+445,
+18.09,
+13
+],
+"valR": [
+570.5,
+404,
+44.11,
+13
+],
+"knobR": [
+578.55,
+417,
+28,
+28
+],
+"color": "#02EBBA"
+},
+{
+"kind": "knob",
+"pid": "b1.lOut",
+"idx": -1,
+"r": [
+570.5,
+458,
+44.11,
+54
+],
+"tip": "Limiter output: the ceiling for this band in dB, -12 to 0. Together with Boost this is how loud the band gets.",
+"cls": "kb",
+"text": "+0dBOutput",
+"label": "Output",
+"labR": [
+573.44,
+499,
+38.22,
+13
+],
+"valR": [
+579.95,
+458,
+25.2,
+13
+],
+"knobR": [
+578.55,
+471,
+28,
+28
+],
+"color": "#02EBBA"
+},
+{
+"kind": "knob",
+"pid": "b1.zoom",
+"idx": -1,
+"r": [
+538.5,
+622,
+75,
+26
+],
+"tip": "Zoom the time axis of the Scope and Gain Red. views, 1x to 8x.",
+"cls": "kb h",
+"text": "4xZoom",
+"label": "Zoom",
+"labR": [
+569.5,
+622,
+25.75,
+13
+],
+"valR": [
+569.5,
+635,
+44,
+13
+],
+"knobR": [
+538.5,
+622,
+26,
+26
+],
+"color": "#02EBBA"
+},
+{
+"kind": "knob",
+"pid": "b2.mix",
+"idx": -1,
+"r": [
+650,
+311,
+77,
+28
+],
+"tip": "Band Mix: dry against compressed for this band only. 100% is fully compressed.",
+"cls": "kb h",
+"text": "100%Mix",
+"label": "Mix",
+"labR": [
+683,
+312,
+17.08,
+13
+],
+"valR": [
+683,
+325,
+44,
+13
+],
+"knobR": [
+650,
+311,
+28,
+28
+],
+"color": "#FFD100"
+},
+{
+"kind": "power",
+"pid": "b2.on",
+"idx": -1,
+"r": [
+905.5,
+317,
+16,
+16
+],
+"tip": "Band power: off lets the band pass unprocessed (it still goes through the crossover).",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "power",
+"pid": "b2.cOn",
+"idx": -1,
+"r": [
+650,
+426,
+16,
+16
+],
+"tip": "Compressor on or off for this band.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b2.rat",
+"idx": -1,
+"r": [
+691.53,
+404,
+50.41,
+60
+],
+"tip": "Compression ratio from 1:1 (nothing) to 1:inf (limiting). Level above the threshold is reduced by this ratio. With \"Ratio in steps\" in System it snaps to whole numbers (1:1, 2:1, 3:1 and so on).",
+"cls": "kb",
+"text": "1 : 2.83Ratio",
+"label": "Ratio",
+"labR": [
+702.67,
+451,
+28.11,
+13
+],
+"valR": [
+691.53,
+404,
+50.41,
+13
+],
+"knobR": [
+699.73,
+417,
+34,
+34
+],
+"color": "#FFD100"
+},
+{
+"kind": "knob",
+"pid": "b2.atk",
+"idx": -1,
+"r": [
+654,
+464,
+44.11,
+54
+],
+"tip": "Attack: how fast the compressor reacts when the level goes over the threshold. Slow lets the front of a kick through (punch), fast squashes it. 0.1 ms to 100 ms.",
+"cls": "kb",
+"text": "15.2 msAttack",
+"label": "Attack",
+"labR": [
+657.89,
+505,
+36.33,
+13
+],
+"valR": [
+654,
+464,
+44.11,
+13
+],
+"knobR": [
+662.05,
+477,
+28,
+28
+],
+"color": "#FFD100"
+},
+{
+"kind": "knob",
+"pid": "b2.rel",
+"idx": -1,
+"r": [
+711.47,
+464,
+42.36,
+54
+],
+"tip": "Release: how fast the compressor lets go. Below 1 ms it switches to AUTO: the time follows the signal (longer after deep compression). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "AUTORelease",
+"label": "Release",
+"labR": [
+711.47,
+505,
+42.36,
+13
+],
+"valR": [
+720.05,
+464,
+25.2,
+13
+],
+"knobR": [
+718.64,
+477,
+28,
+28
+],
+"color": "#FFD100"
+},
+{
+"kind": "knob",
+"pid": "b2.boost",
+"idx": -1,
+"r": [
+767.19,
+464,
+37.81,
+54
+],
+"tip": "Boost: make-up gain after the compressor, 0 to +24 dB. It pushes into the band limiter. With Autogain in System, extra make-up is added for you.",
+"cls": "kb",
+"text": "+0.0dBBoost",
+"label": "Boost",
+"labR": [
+770.45,
+505,
+31.28,
+13
+],
+"valR": [
+767.19,
+464,
+37.81,
+13
+],
+"knobR": [
+772.09,
+477,
+28,
+28
+],
+"color": "#FFD100"
+},
+{
+"kind": "power",
+"pid": "b2.lOn",
+"idx": -1,
+"r": [
+832,
+420,
+16,
+16
+],
+"tip": "Band limiter on or off. A lookahead limiter at the end of the band: nothing from this band goes above its Output level.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b2.lRel",
+"idx": -1,
+"r": [
+862,
+404,
+44.11,
+54
+],
+"tip": "Limiter release: how fast the limiter lets go. Below 1 ms it switches to AUTO (program dependent: longer after deep limiting). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "50.0 msRls",
+"label": "Rls",
+"labR": [
+875,
+445,
+18.09,
+13
+],
+"valR": [
+862,
+404,
+44.11,
+13
+],
+"knobR": [
+870.05,
+417,
+28,
+28
+],
+"color": "#FFD100"
+},
+{
+"kind": "knob",
+"pid": "b2.lOut",
+"idx": -1,
+"r": [
+862,
+458,
+44.11,
+54
+],
+"tip": "Limiter output: the ceiling for this band in dB, -12 to 0. Together with Boost this is how loud the band gets.",
+"cls": "kb",
+"text": "+0dBOutput",
+"label": "Output",
+"labR": [
+864.94,
+499,
+38.22,
+13
+],
+"valR": [
+871.45,
+458,
+25.2,
+13
+],
+"knobR": [
+870.05,
+471,
+28,
+28
+],
+"color": "#FFD100"
+},
+{
+"kind": "knob",
+"pid": "b2.zoom",
+"idx": -1,
+"r": [
+830,
+622,
+75,
+26
+],
+"tip": "Zoom the time axis of the Scope and Gain Red. views, 1x to 8x.",
+"cls": "kb h",
+"text": "4xZoom",
+"label": "Zoom",
+"labR": [
+861,
+622,
+25.75,
+13
+],
+"valR": [
+861,
+635,
+44,
+13
+],
+"knobR": [
+830,
+622,
+26,
+26
+],
+"color": "#FFD100"
+},
+{
+"kind": "knob",
+"pid": "b3.mix",
+"idx": -1,
+"r": [
+941.5,
+311,
+77,
+28
+],
+"tip": "Band Mix: dry against compressed for this band only. 100% is fully compressed.",
+"cls": "kb h",
+"text": "100%Mix",
+"label": "Mix",
+"labR": [
+974.5,
+312,
+17.08,
+13
+],
+"valR": [
+974.5,
+325,
+44,
+13
+],
+"knobR": [
+941.5,
+311,
+28,
+28
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "power",
+"pid": "b3.on",
+"idx": -1,
+"r": [
+1197,
+317,
+16,
+16
+],
+"tip": "Band power: off lets the band pass unprocessed (it still goes through the crossover).",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "power",
+"pid": "b3.cOn",
+"idx": -1,
+"r": [
+941.5,
+426,
+16,
+16
+],
+"tip": "Compressor on or off for this band.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b3.rat",
+"idx": -1,
+"r": [
+983.03,
+404,
+50.41,
+60
+],
+"tip": "Compression ratio from 1:1 (nothing) to 1:inf (limiting). Level above the threshold is reduced by this ratio. With \"Ratio in steps\" in System it snaps to whole numbers (1:1, 2:1, 3:1 and so on).",
+"cls": "kb",
+"text": "1 : 5.75Ratio",
+"label": "Ratio",
+"labR": [
+994.17,
+451,
+28.11,
+13
+],
+"valR": [
+983.03,
+404,
+50.41,
+13
+],
+"knobR": [
+991.23,
+417,
+34,
+34
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "b3.atk",
+"idx": -1,
+"r": [
+945.5,
+464,
+44.11,
+54
+],
+"tip": "Attack: how fast the compressor reacts when the level goes over the threshold. Slow lets the front of a kick through (punch), fast squashes it. 0.1 ms to 100 ms.",
+"cls": "kb",
+"text": "10.7 msAttack",
+"label": "Attack",
+"labR": [
+949.39,
+505,
+36.33,
+13
+],
+"valR": [
+945.5,
+464,
+44.11,
+13
+],
+"knobR": [
+953.55,
+477,
+28,
+28
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "b3.rel",
+"idx": -1,
+"r": [
+1002.09,
+464,
+44.11,
+54
+],
+"tip": "Release: how fast the compressor lets go. Below 1 ms it switches to AUTO: the time follows the signal (longer after deep compression). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "38.9 msRelease",
+"label": "Release",
+"labR": [
+1002.97,
+505,
+42.36,
+13
+],
+"valR": [
+1002.09,
+464,
+44.11,
+13
+],
+"knobR": [
+1010.14,
+477,
+28,
+28
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "b3.boost",
+"idx": -1,
+"r": [
+1058.69,
+464,
+37.81,
+54
+],
+"tip": "Boost: make-up gain after the compressor, 0 to +24 dB. It pushes into the band limiter. With Autogain in System, extra make-up is added for you.",
+"cls": "kb",
+"text": "+0.0dBBoost",
+"label": "Boost",
+"labR": [
+1061.95,
+505,
+31.28,
+13
+],
+"valR": [
+1058.69,
+464,
+37.81,
+13
+],
+"knobR": [
+1063.59,
+477,
+28,
+28
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "power",
+"pid": "b3.lOn",
+"idx": -1,
+"r": [
+1123.5,
+420,
+16,
+16
+],
+"tip": "Band limiter on or off. A lookahead limiter at the end of the band: nothing from this band goes above its Output level.",
+"cls": "pw on",
+"text": ""
+},
+{
+"kind": "knob",
+"pid": "b3.lRel",
+"idx": -1,
+"r": [
+1153.5,
+404,
+44.11,
+54
+],
+"tip": "Limiter release: how fast the limiter lets go. Below 1 ms it switches to AUTO (program dependent: longer after deep limiting). 0.5 ms (AUTO) to 1000 ms.",
+"cls": "kb",
+"text": "50.0 msRls",
+"label": "Rls",
+"labR": [
+1166.5,
+445,
+18.09,
+13
+],
+"valR": [
+1153.5,
+404,
+44.11,
+13
+],
+"knobR": [
+1161.55,
+417,
+28,
+28
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "b3.lOut",
+"idx": -1,
+"r": [
+1153.5,
+458,
+44.11,
+54
+],
+"tip": "Limiter output: the ceiling for this band in dB, -12 to 0. Together with Boost this is how loud the band gets.",
+"cls": "kb",
+"text": "+0dBOutput",
+"label": "Output",
+"labR": [
+1156.44,
+499,
+38.22,
+13
+],
+"valR": [
+1162.95,
+458,
+25.2,
+13
+],
+"knobR": [
+1161.55,
+471,
+28,
+28
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "b3.zoom",
+"idx": -1,
+"r": [
+1121.5,
+622,
+75,
+26
+],
+"tip": "Zoom the time axis of the Scope and Gain Red. views, 1x to 8x.",
+"cls": "kb h",
+"text": "4xZoom",
+"label": "Zoom",
+"labR": [
+1152.5,
+622,
+25.75,
+13
+],
+"valR": [
+1152.5,
+635,
+44,
+13
+],
+"knobR": [
+1121.5,
+622,
+26,
+26
+],
+"color": "#FF7BB1"
+}
+],
+"cv": [
+{
+"id": "",
+"cls": "",
+"r": [
+0,
+0,
+52,
+720
+],
+"tip": "Double-click the wood to reset the window to 100%.",
+"parent": "cheek"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+62,
+93,
+100,
+98
+],
+"tip": "Level before the compressor (after the Pan and Gain knobs below). The cyan tick at -6 dB is the best input level for the compressor. Two bars, left and right, in dB. Blue is safe, purple is the warning zone, pink is clipping. The cap stays pink after a clip; click to clear it.",
+"parent": "sidecol"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+172,
+94,
+922,
+178
+],
+"tip": "Frequency view, 20 Hz to 20 kHz. Drag the vertical dividers to move the crossovers. Drag the In handle (left of a band) and the Out handle (right of a band) up or down to trim that band before and after its processing. Left axis: band trim in dB. Right axis: spectrum in dBFS.",
+"parent": "ctr"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+1111,
+66,
+100,
+98
+],
+"tip": "Level after the compressor, master limiter and output Gain (before page 2). Two bars in dB. Blue is safe, purple is the warning zone, pink is clipping. The cap stays pink after a clip; click to clear it.",
+"parent": "sidecol"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+67,
+341,
+273,
+38
+],
+"tip": "Band input level in dB with the Threshold slider. Drag the white slider to set the threshold: the compressor works on everything above it. The orange tick is the limiter ceiling.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+67,
+381,
+273,
+20
+],
+"tip": "Gain reduction of this band: how many dB the compressor is turning the band down. Grows from the right. The scale is in dB.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+164.94,
+417,
+48,
+42
+],
+"tip": "Transfer curve: level in across, level out up, both in dB (-48 to 0). It shows the threshold, ratio and knee of this band.",
+"parent": "krow"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+240,
+438,
+34,
+80
+],
+"tip": "Band limiter gain reduction in dB, scale 0 to -12.",
+"parent": ""
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+67,
+526,
+273,
+92
+],
+"tip": "Band display. Scope: red is the original band, green is the compressed band, grey is where they overlap, shown as a waveform shape in dB over the last seconds, with the threshold as a dashed line. Gain Red.: how much the band was turned down over time, in dB. Choose with the buttons below; Zoom changes the time span.",
+"parent": "dpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+358.5,
+341,
+273,
+38
+],
+"tip": "Band input level in dB with the Threshold slider. Drag the white slider to set the threshold: the compressor works on everything above it. The orange tick is the limiter ceiling.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+358.5,
+381,
+273,
+20
+],
+"tip": "Gain reduction of this band: how many dB the compressor is turning the band down. Grows from the right. The scale is in dB.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+456.44,
+417,
+48,
+42
+],
+"tip": "Transfer curve: level in across, level out up, both in dB (-48 to 0). It shows the threshold, ratio and knee of this band.",
+"parent": "krow"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+531.5,
+438,
+34,
+80
+],
+"tip": "Band limiter gain reduction in dB, scale 0 to -12.",
+"parent": ""
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+358.5,
+526,
+273,
+92
+],
+"tip": "Band display. Scope: red is the original band, green is the compressed band, grey is where they overlap, shown as a waveform shape in dB over the last seconds, with the threshold as a dashed line. Gain Red.: how much the band was turned down over time, in dB. Choose with the buttons below; Zoom changes the time span.",
+"parent": "dpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+650,
+341,
+273,
+38
+],
+"tip": "Band input level in dB with the Threshold slider. Drag the white slider to set the threshold: the compressor works on everything above it. The orange tick is the limiter ceiling.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+650,
+381,
+273,
+20
+],
+"tip": "Gain reduction of this band: how many dB the compressor is turning the band down. Grows from the right. The scale is in dB.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+747.94,
+417,
+48,
+42
+],
+"tip": "Transfer curve: level in across, level out up, both in dB (-48 to 0). It shows the threshold, ratio and knee of this band.",
+"parent": "krow"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+823,
+438,
+34,
+80
+],
+"tip": "Band limiter gain reduction in dB, scale 0 to -12.",
+"parent": ""
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+650,
+526,
+273,
+92
+],
+"tip": "Band display. Scope: red is the original band, green is the compressed band, grey is where they overlap, shown as a waveform shape in dB over the last seconds, with the threshold as a dashed line. Gain Red.: how much the band was turned down over time, in dB. Choose with the buttons below; Zoom changes the time span.",
+"parent": "dpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+941.5,
+341,
+273,
+38
+],
+"tip": "Band input level in dB with the Threshold slider. Drag the white slider to set the threshold: the compressor works on everything above it. The orange tick is the limiter ceiling.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+941.5,
+381,
+273,
+20
+],
+"tip": "Gain reduction of this band: how many dB the compressor is turning the band down. Grows from the right. The scale is in dB.",
+"parent": "tpart"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+1039.44,
+417,
+48,
+42
+],
+"tip": "Transfer curve: level in across, level out up, both in dB (-48 to 0). It shows the threshold, ratio and knee of this band.",
+"parent": "krow"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+1114.5,
+438,
+34,
+80
+],
+"tip": "Band limiter gain reduction in dB, scale 0 to -12.",
+"parent": ""
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+941.5,
+526,
+273,
+92
+],
+"tip": "Band display. Scope: red is the original band, green is the compressed band, grey is where they overlap, shown as a waveform shape in dB over the last seconds, with the threshold as a dashed line. Gain Red.: how much the band was turned down over time, in dB. Choose with the buttons below; Zoom changes the time span.",
+"parent": "dpart"
+},
+{
+"id": "",
+"cls": "",
+"r": [
+1228,
+0,
+52,
+720
+],
+"tip": "Double-click the wood to reset the window to 100%.",
+"parent": "cheek"
+}
+],
+"txt": [
+{
+"t": "Multi",
+"c": "name",
+"r": [
+101,
+1.5,
+41.63,
+28
+],
+"fs": 23,
+"fw": 800,
+"mono": false,
+"it": true,
+"ls": 0.5,
+"col": [
+255,
+255,
+255,
+1
+],
+"tt": "none"
+},
+{
+"t": "Paw",
+"c": "I",
+"r": [
+143.63,
+1.5,
+36.31,
+28
+],
+"fs": 23,
+"fw": 800,
+"mono": false,
+"it": true,
+"ls": 0.5,
+"col": [
+2,
+235,
+186,
+1
+],
+"tt": "none"
+},
+{
+"t": "Compressor \u00b7 Studio 87",
+"c": "s87",
+"r": [
+101,
+26.5,
+130.19,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.6,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Pre",
+"c": "cap",
+"r": [
+102.55,
+50,
+18.91,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Latency 15.0 ms",
+"c": "cap",
+"r": [
+80.08,
+255,
+63.84,
+12
+],
+"fs": 10,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0.6,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "New York tip: 50% Mix with fast, deep compression",
+"c": "mixnote",
+"r": [
+626.71,
+55.45,
+136.23,
+24.55
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0.4,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "Post",
+"c": "cap",
+"r": [
+1148.47,
+50,
+25.05,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Limiter GR -0.7 dB",
+"c": "cap",
+"r": [
+1126.38,
+285,
+69.23,
+12
+],
+"fs": 10,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0.4,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "- Select -",
+"c": "nm",
+"r": [
+212.61,
+317,
+41.28,
+16
+],
+"fs": 13,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "none"
+},
+{
+"t": "COMP.",
+"c": "st",
+"r": [
+67,
+405,
+35.53,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "LIM.",
+"c": "st",
+"r": [
+244.72,
+403,
+24.56,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "- Select -",
+"c": "nm",
+"r": [
+504.11,
+317,
+41.28,
+16
+],
+"fs": 13,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "none"
+},
+{
+"t": "COMP.",
+"c": "st",
+"r": [
+358.5,
+405,
+35.53,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "LIM.",
+"c": "st",
+"r": [
+536.22,
+403,
+24.56,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "- Select -",
+"c": "nm",
+"r": [
+795.61,
+317,
+41.28,
+16
+],
+"fs": 13,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "none"
+},
+{
+"t": "COMP.",
+"c": "st",
+"r": [
+650,
+405,
+35.53,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "LIM.",
+"c": "st",
+"r": [
+827.72,
+403,
+24.56,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "- Select -",
+"c": "nm",
+"r": [
+1087.11,
+317,
+41.28,
+16
+],
+"fs": 13,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "none"
+},
+{
+"t": "COMP.",
+"c": "st",
+"r": [
+941.5,
+405,
+35.53,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "LIM.",
+"c": "st",
+"r": [
+1119.22,
+403,
+24.56,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.5,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "Trigger feed",
+"c": "LABEL",
+"r": [
+383.27,
+669.5,
+50.97,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "Level",
+"c": "LABEL",
+"r": [
+535.23,
+669.5,
+21.75,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "Comp vs Dry  RMS",
+"c": "rd",
+"r": [
+733.17,
+669.5,
+105.61,
+14
+],
+"fs": 11,
+"fw": 400,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "+0.5 dB",
+"c": "B",
+"r": [
+838.78,
+669.5,
+46.2,
+14
+],
+"fs": 11,
+"fw": 600,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+2,
+235,
+186,
+1
+],
+"tt": "none"
+},
+{
+"t": "Crest 9.1 to 10.7 dB",
+"c": "rd",
+"r": [
+884.98,
+669.5,
+145.2,
+14
+],
+"fs": 11,
+"fw": 400,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "-1.6 LU",
+"c": "B",
+"r": [
+1030.19,
+669.5,
+46.2,
+14
+],
+"fs": 11,
+"fw": 600,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+2,
+235,
+186,
+1
+],
+"tt": "none"
+},
+{
+"t": "at equal peak",
+"c": "rd",
+"r": [
+1076.39,
+669.5,
+92.41,
+14
+],
+"fs": 11,
+"fw": 400,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "Preview rig, not plugin",
+"c": "tag",
+"r": [
+1183.8,
+670.5,
+121.34,
+12
+],
+"fs": 10,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Studio 87 \u00b7 MultiPaw Compressor v1.0 design mockup",
+"c": "SPAN",
+"r": [
+64,
+701.5,
+268.55,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "1280 \u00d7 720 px",
+"c": "SPAN",
+"r": [
+1147.72,
+701.5,
+68.28,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+}
+],
+"other": [
+{
+"tag": "DIV",
+"id": "cheekL",
+"cls": "cheek",
+"r": [
+0,
+0,
+52,
+720
+],
+"text": "",
+"tip": "Double-click the wood to reset the window to 100%."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "brand",
+"r": [
+62,
+4.5,
+176,
+34
+],
+"text": "MultiPawCompressor \u00b7 Studio 87",
+"tip": "MultiPaw Compressor by Studio 87: one plugin, two pages."
+},
+{
+"tag": "BUTTON",
+"id": "pgA",
+"cls": "on",
+"r": [
+247,
+9,
+112.69,
+25
+],
+"text": "Compressor",
+"tip": "Page 1: Multiband Compressor. Up to four bands, each with its own compressor, limiter and dynamic pattern. The small lamp shows if this page is processing sound. Press P to flip pages."
+},
+{
+"tag": "SPAN",
+"id": "pwA",
+"cls": "pwr on",
+"r": [
+257,
+17,
+9,
+9
+],
+"text": "",
+"tip": "Compressor page processing on or off. Click the lamp to switch it."
+},
+{
+"tag": "BUTTON",
+"id": "pgB",
+"cls": "",
+"r": [
+359.69,
+9,
+99.38,
+25
+],
+"text": "Sidechain",
+"tip": "Page 2: Multiband Sidechain. Pumping and ducking for a low and a high band, triggered by audio, MIDI or the host beat. The small lamp shows if this page is processing sound. Press P to flip pages."
+},
+{
+"tag": "SPAN",
+"id": "pwB",
+"cls": "pwr",
+"r": [
+370.69,
+17,
+9,
+9
+],
+"text": "",
+"tip": "Sidechain page processing on or off. Click the lamp to switch it. It starts off so the sidechain does not pump until you want it."
+},
+{
+"tag": "BUTTON",
+"id": "pPrev",
+"cls": "btn",
+"r": [
+538.06,
+9.09,
+33.34,
+24.8
+],
+"text": "\u25c0",
+"tip": "Previous preset of this page."
+},
+{
+"tag": "BUTTON",
+"id": "pName",
+"cls": "btn pname",
+"r": [
+575.41,
+8.5,
+176,
+26
+],
+"text": "Trance Master 2",
+"tip": "Open the preset browser for this page. Double-click to rename your own presets."
+},
+{
+"tag": "BUTTON",
+"id": "pNext",
+"cls": "btn",
+"r": [
+755.41,
+9.09,
+33.34,
+24.8
+],
+"text": "\u25b6",
+"tip": "Next preset of this page."
+},
+{
+"tag": "BUTTON",
+"id": "pSave",
+"cls": "btn",
+"r": [
+792.75,
+9.09,
+45.08,
+24.8
+],
+"text": "Save",
+"tip": "Save these settings as your own preset. Asks before overwriting."
+},
+{
+"tag": "BUTTON",
+"id": "bBypass",
+"cls": "btn",
+"r": [
+915.83,
+9.09,
+57.36,
+24.8
+],
+"text": "Bypass",
+"tip": "Bypass (B): hear the dry signal, delayed to match, to compare with the processed sound. The meters keep moving."
+},
+{
+"tag": "BUTTON",
+"id": "bGuide",
+"cls": "btn",
+"r": [
+981.19,
+9.09,
+49.8,
+24.8
+],
+"text": "Guide",
+"tip": "Short guide, what is verified and what is our own choice, and keyboard shortcuts."
+},
+{
+"tag": "BUTTON",
+"id": "bSettings",
+"cls": "btn",
+"r": [
+1038.98,
+9.09,
+63.81,
+24.8
+],
+"text": "Settings",
+"tip": "Info bubbles, power saving, colour look."
+},
+{
+"tag": "BUTTON",
+"id": "bAbout",
+"cls": "btn",
+"r": [
+1110.8,
+9.09,
+107.2,
+24.8
+],
+"text": "About & Support",
+"tip": "About, support and where your files live."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "cap",
+"r": [
+80.08,
+255,
+63.84,
+12
+],
+"text": "Latency 15.0 ms",
+"tip": "Latency reported to the host: the lookahead of the band limiters plus the master limiter. Change it in System."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+582.29,
+58,
+36.42,
+20
+],
+"text": "Keep",
+"tip": "Keep Mix: when on, loading a preset leaves the Mix knob where you put it, so you can compare presets at the same Mix. When off, each preset sets its own Mix (Trance Master 2 uses 75%, Bass Tight 100%)."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "mixnote",
+"r": [
+626.71,
+56.45,
+150,
+23.09
+],
+"text": "New York tip: 50% Mix with fast, deep compression",
+"tip": "New York compression: blend a heavily squashed copy under the untouched sound. Try low thresholds, ratio 6:1 or more, fast attack, and Mix around 30 to 50%."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+1035.5,
+59.59,
+58.5,
+24.8
+],
+"text": "System",
+"tip": "System page: ECO, lookahead, local readouts, autogain, ratio in steps and detector."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+272.56,
+278,
+36.86,
+14
+],
+"text": "Mute",
+"tip": "Mute this band: its sound is removed from the output."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+321.42,
+278,
+34.59,
+14
+],
+"text": "Solo",
+"tip": "Solo this band: hear only soloed bands."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+534.63,
+278,
+36.86,
+14
+],
+"text": "Mute",
+"tip": "Mute this band: its sound is removed from the output."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+583.48,
+278,
+34.59,
+14
+],
+"text": "Solo",
+"tip": "Solo this band: hear only soloed bands."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+799.73,
+278,
+36.86,
+14
+],
+"text": "Mute",
+"tip": "Mute this band: its sound is removed from the output."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+848.59,
+278,
+34.59,
+14
+],
+"text": "Solo",
+"tip": "Solo this band: hear only soloed bands."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+982.63,
+278,
+22.38,
+14
+],
+"text": "M",
+"tip": "Mute this band: its sound is removed from the output."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "chk",
+"r": [
+1011,
+278,
+21.13,
+14
+],
+"text": "S",
+"tip": "Solo this band: hear only soloed bands."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "kb",
+"r": [
+1116.83,
+228,
+16.53,
+54
+],
+"text": "Lim",
+"tip": "Master output limiter on or off. A lookahead limiter on the summed output. Needs Latency as shown on the left."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "cap",
+"r": [
+1126.38,
+285,
+69.23,
+12
+],
+"text": "Limiter GR -0.7 dB",
+"tip": "Master limiter gain reduction right now, in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+150,
+314,
+23.5,
+22
+],
+"text": "\u25c0",
+"tip": "Previous band preset: a compressor and limiter setup for this band only."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "nm",
+"r": [
+175.5,
+314,
+115.5,
+22
+],
+"text": "- Select -",
+"tip": "Band preset: click to pick a ready-made setting for this band only (it changes this band's compressor and limiter, nothing else)."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+293,
+314,
+23.5,
+22
+],
+"text": "\u25b6",
+"tip": "Next band preset."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+218.94,
+417,
+20,
+18
+],
+"text": "H",
+"tip": "Hard knee: the ratio starts exactly at the threshold. More obvious, punchier."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+218.94,
+437,
+20,
+18
+],
+"text": "S",
+"tip": "Soft knee: eases into the ratio over 6 dB around the threshold. Smoother, less obvious."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+67,
+625,
+54,
+20
+],
+"text": "Scope",
+"tip": "Scope view: red is the original band, green the compressed band, grey where they overlap, as a waveform shape in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+125,
+625,
+60,
+20
+],
+"text": "Gain Red.",
+"tip": "Gain reduction view: how much this band was turned down over the last seconds, in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+189,
+625,
+54,
+20
+],
+"text": "DPC",
+"tip": "Dynamic Pattern Compressor: edit the beat-synced gain pattern for this band."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+441.5,
+314,
+23.5,
+22
+],
+"text": "\u25c0",
+"tip": "Previous band preset: a compressor and limiter setup for this band only."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "nm",
+"r": [
+467,
+314,
+115.5,
+22
+],
+"text": "- Select -",
+"tip": "Band preset: click to pick a ready-made setting for this band only (it changes this band's compressor and limiter, nothing else)."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+584.5,
+314,
+23.5,
+22
+],
+"text": "\u25b6",
+"tip": "Next band preset."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+510.44,
+417,
+20,
+18
+],
+"text": "H",
+"tip": "Hard knee: the ratio starts exactly at the threshold. More obvious, punchier."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+510.44,
+437,
+20,
+18
+],
+"text": "S",
+"tip": "Soft knee: eases into the ratio over 6 dB around the threshold. Smoother, less obvious."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+358.5,
+625,
+54,
+20
+],
+"text": "Scope",
+"tip": "Scope view: red is the original band, green the compressed band, grey where they overlap, as a waveform shape in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+416.5,
+625,
+60,
+20
+],
+"text": "Gain Red.",
+"tip": "Gain reduction view: how much this band was turned down over the last seconds, in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+480.5,
+625,
+54,
+20
+],
+"text": "DPC",
+"tip": "Dynamic Pattern Compressor: edit the beat-synced gain pattern for this band."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+733,
+314,
+23.5,
+22
+],
+"text": "\u25c0",
+"tip": "Previous band preset: a compressor and limiter setup for this band only."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "nm",
+"r": [
+758.5,
+314,
+115.5,
+22
+],
+"text": "- Select -",
+"tip": "Band preset: click to pick a ready-made setting for this band only (it changes this band's compressor and limiter, nothing else)."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+876,
+314,
+23.5,
+22
+],
+"text": "\u25b6",
+"tip": "Next band preset."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+801.94,
+417,
+20,
+18
+],
+"text": "H",
+"tip": "Hard knee: the ratio starts exactly at the threshold. More obvious, punchier."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+801.94,
+437,
+20,
+18
+],
+"text": "S",
+"tip": "Soft knee: eases into the ratio over 6 dB around the threshold. Smoother, less obvious."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+650,
+625,
+54,
+20
+],
+"text": "Scope",
+"tip": "Scope view: red is the original band, green the compressed band, grey where they overlap, as a waveform shape in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+708,
+625,
+60,
+20
+],
+"text": "Gain Red.",
+"tip": "Gain reduction view: how much this band was turned down over the last seconds, in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+772,
+625,
+54,
+20
+],
+"text": "DPC",
+"tip": "Dynamic Pattern Compressor: edit the beat-synced gain pattern for this band."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+1024.5,
+314,
+23.5,
+22
+],
+"text": "\u25c0",
+"tip": "Previous band preset: a compressor and limiter setup for this band only."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "nm",
+"r": [
+1050,
+314,
+115.5,
+22
+],
+"text": "- Select -",
+"tip": "Band preset: click to pick a ready-made setting for this band only (it changes this band's compressor and limiter, nothing else)."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "btn",
+"r": [
+1167.5,
+314,
+23.5,
+22
+],
+"text": "\u25b6",
+"tip": "Next band preset."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+1093.44,
+417,
+20,
+18
+],
+"text": "H",
+"tip": "Hard knee: the ratio starts exactly at the threshold. More obvious, punchier."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+1093.44,
+437,
+20,
+18
+],
+"text": "S",
+"tip": "Soft knee: eases into the ratio over 6 dB around the threshold. Smoother, less obvious."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on",
+"r": [
+941.5,
+625,
+54,
+20
+],
+"text": "Scope",
+"tip": "Scope view: red is the original band, green the compressed band, grey where they overlap, as a waveform shape in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+999.5,
+625,
+60,
+20
+],
+"text": "Gain Red.",
+"tip": "Gain reduction view: how much this band was turned down over the last seconds, in dB."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+1063.5,
+625,
+54,
+20
+],
+"text": "DPC",
+"tip": "Dynamic Pattern Compressor: edit the beat-synced gain pattern for this band."
+},
+{
+"tag": "BUTTON",
+"id": "rigPlay",
+"cls": "btn",
+"r": [
+62,
+664.09,
+58.88,
+24.8
+],
+"text": "\u25b6 Play",
+"tip": "Start or stop the preview sound (Space). The meters and displays move even when it is stopped."
+},
+{
+"tag": "SELECT",
+"id": "rigSrc",
+"cls": "",
+"r": [
+128.88,
+664.5,
+172,
+24
+],
+"text": "Full mix loopHardstyle kick + offbeat bassSupersaw leadDrum ",
+"tip": "Test sound for the preview rig."
+},
+{
+"tag": "BUTTON",
+"id": "rigFile",
+"cls": "btn",
+"r": [
+308.88,
+664.09,
+66.39,
+24.8
+],
+"text": "Load file",
+"tip": "Load your own audio file for the preview. Nothing is uploaded; it is decoded in this page only."
+},
+{
+"tag": "LABEL",
+"id": "",
+"cls": "",
+"r": [
+383.27,
+664.5,
+143.97,
+24
+],
+"text": "Trigger feed Kick trackSame signal",
+"tip": "Sidechain feed for page 2 in Audio mode. Kick track: a separate kick plays the trigger, as if a kick track was routed in. Same signal: the sound itself triggers the pumping."
+},
+{
+"tag": "SELECT",
+"id": "rigFeed",
+"cls": "",
+"r": [
+438.23,
+664.5,
+89,
+24
+],
+"text": "Kick trackSame signal",
+"tip": ""
+},
+{
+"tag": "LABEL",
+"id": "",
+"cls": "",
+"r": [
+535.23,
+664.5,
+100.75,
+24
+],
+"text": "Level QuietLoudMastered",
+"tip": "Preview level (preview only). The factory presets are made for loud, near-mastered material, so the quiet test sounds barely touch them. Quiet: as generated. Loud: up to 6 dB hotter, peaks kept at -1 dB. Mastered: peaks at -0.5 dB, like a finished track. No level ever clips the rig or tickles the master limiter on its own, so 0% Mix is the untouched sound. The Input gain knob of the plugin does the same job on your own music."
+},
+{
+"tag": "SELECT",
+"id": "rigLvl",
+"cls": "",
+"r": [
+560.98,
+664.5,
+75,
+24
+],
+"text": "QuietLoudMastered",
+"tip": ""
+},
+{
+"tag": "BUTTON",
+"id": "rigLM",
+"cls": "tgb",
+"r": [
+643.98,
+664.5,
+73.19,
+24
+],
+"text": "Level match",
+"tip": "Level match (preview only): the compressed sound is turned up or down to the same average loudness as the dry sound, so A/B (B key) compares density, punch and sustain instead of volume. Uses a 0.5 s average. Loops play at 150 BPM; Host Sync and DPC follow that transport."
+},
+{
+"tag": "SPAN",
+"id": "rigRd",
+"cls": "rd",
+"r": [
+733.17,
+669.5,
+435.63,
+14
+],
+"text": "Comp vs Dry  RMS +0.5 dB  Crest 9.1 to 10.7 dB  -1.6 LU at e",
+"tip": "Live comparison of the compressor page against the dry input (after input gain), averaged over about half a second. RMS: average level change in dB. Crest: peak minus RMS, dry then compressed. LU at equal peak: how much louder the compressed sound can be played before its peak reaches the dry peak (dry crest minus compressed crest). Mix, autogain and Level match all show up here."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "tag",
+"r": [
+1176.8,
+668.5,
+135.34,
+16
+],
+"text": "Preview rig, not plugin",
+"tip": "This strip only exists in the design mockup. The plugin itself has no preview rig."
+},
+{
+"tag": "DIV",
+"id": "cheekR",
+"cls": "cheek",
+"r": [
+1228,
+0,
+52,
+720
+],
+"text": "",
+"tip": "Double-click the wood to reset the window to 100%."
+},
+{
+"tag": "BUTTON",
+"id": "zMinus",
+"cls": "btn",
+"r": [
+434.89,
+728,
+24.67,
+20.8
+],
+"text": "\u2212",
+"tip": ""
+},
+{
+"tag": "BUTTON",
+"id": "zPct",
+"cls": "btn",
+"r": [
+465.56,
+728,
+47.11,
+20.8
+],
+"text": "100%",
+"tip": ""
+},
+{
+"tag": "BUTTON",
+"id": "zPlus",
+"cls": "btn",
+"r": [
+518.67,
+728,
+24.67,
+20.8
+],
+"text": "+",
+"tip": ""
+}
+],
+"box": [
+{
+"c": "main",
+"r": [
+52,
+0,
+1176,
+720
+],
+"bg": [
+22,
+23,
+26,
+1
+],
+"bd": 0,
+"bc": [
+244,
+245,
+247,
+1
+],
+"rad": 0
+},
+{
+"c": "hdr",
+"r": [
+52,
+0,
+1176,
+44
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 0,
+"bc": [
+244,
+245,
+247,
+1
+],
+"rad": 0
+},
+{
+"c": "flip",
+"r": [
+246,
+8,
+214.06,
+27
+],
+"bg": [
+0,
+0,
+0,
+0
+],
+"bd": 1,
+"bc": [
+205,
+146,
+254,
+1
+],
+"rad": 6
+},
+{
+"c": "ms",
+"r": [
+207,
+274,
+214.58,
+22
+],
+"bg": [
+108,
+201,
+245,
+0.1
+],
+"bd": 1,
+"bc": [
+108,
+201,
+245,
+0.6
+],
+"rad": 0
+},
+{
+"c": "ms",
+"r": [
+421.58,
+274,
+309.55,
+22
+],
+"bg": [
+2,
+235,
+186,
+0.1
+],
+"bd": 1,
+"bc": [
+2,
+235,
+186,
+0.6
+],
+"rad": 0
+},
+{
+"c": "ms",
+"r": [
+731.14,
+274,
+220.64,
+22
+],
+"bg": [
+255,
+209,
+0,
+0.1
+],
+"bd": 1,
+"bc": [
+255,
+209,
+0,
+0.6
+],
+"rad": 0
+},
+{
+"c": "ms",
+"r": [
+951.78,
+274,
+111.2,
+22
+],
+"bg": [
+255,
+123,
+177,
+0.1
+],
+"bd": 1,
+"bc": [
+255,
+123,
+177,
+0.6
+],
+"rad": 0
+},
+{
+"c": "strip",
+"r": [
+60,
+304,
+285.5,
+344
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 4
+},
+{
+"c": "nm",
+"r": [
+175.5,
+314,
+115.5,
+22
+],
+"bg": [
+6,
+8,
+10,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 3
+},
+{
+"c": "strip",
+"r": [
+351.5,
+304,
+285.5,
+344
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 4
+},
+{
+"c": "nm",
+"r": [
+467,
+314,
+115.5,
+22
+],
+"bg": [
+6,
+8,
+10,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 3
+},
+{
+"c": "strip",
+"r": [
+643,
+304,
+285.5,
+344
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 4
+},
+{
+"c": "nm",
+"r": [
+758.5,
+314,
+115.5,
+22
+],
+"bg": [
+6,
+8,
+10,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 3
+},
+{
+"c": "strip",
+"r": [
+934.5,
+304,
+285.5,
+344
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 4
+},
+{
+"c": "nm",
+"r": [
+1050,
+314,
+115.5,
+22
+],
+"bg": [
+6,
+8,
+10,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 3
+},
+{
+"c": "rig",
+"r": [
+52,
+656,
+1176,
+40
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 0
+},
+{
+"c": "tag",
+"r": [
+1176.8,
+668.5,
+135.34,
+16
+],
+"bg": [
+0,
+0,
+0,
+0
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 3
+},
+{
+"c": "foot",
+"r": [
+52,
+696,
+1176,
+24
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 0
+}
+]
+},
+{
+"page": 1,
+"ctl": [
+{
+"kind": "radio",
+"pid": "s.trig",
+"idx": 0,
+"r": [
+141.78,
+59,
+51.55,
+16
+],
+"tip": "Audio: the sidechain signal (after the EQ below) triggers the envelope when it passes the Sens level, like a kick on a sidechain input.",
+"cls": "rad",
+"text": "Audio"
+},
+{
+"kind": "radio",
+"pid": "s.trig",
+"idx": 1,
+"r": [
+199.33,
+59,
+44.72,
+16
+],
+"tip": "MIDI: each MIDI note-on triggers the envelope. In the preview rig the kick pattern plays the role of the MIDI notes.",
+"cls": "rad",
+"text": "MIDI"
+},
+{
+"kind": "radio",
+"pid": "s.trig",
+"idx": 2,
+"r": [
+250.05,
+59,
+72.91,
+16
+],
+"tip": "Host Sync: the envelope restarts on the beat grid of the host transport (grid and offset below). No audio needed. Our rig runs at 150 BPM.",
+"cls": "rad on",
+"text": "Host Sync"
+},
+{
+"kind": "knob",
+"pid": "s.sens",
+"idx": -1,
+"r": [
+526.31,
+53,
+77,
+28
+],
+"tip": "Trigger sensitivity for Audio mode, 0 to 100%. Higher means a quieter signal triggers (threshold from -6 dBFS at 0% down to -60 dBFS at 100%). Our scale.",
+"cls": "kb h",
+"text": "59.0%Sens",
+"label": "Sens",
+"labR": [
+559.31,
+54,
+24.88,
+13
+],
+"valR": [
+559.31,
+67,
+44,
+13
+],
+"knobR": [
+526.31,
+53,
+28,
+28
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.offset",
+"idx": -1,
+"r": [
+617.31,
+53,
+77,
+28
+],
+"tip": "Host Sync offset: shifts the trigger inside the grid step. 50% on the 1/4 grid gives the classic offbeat pump. Our addition.",
+"cls": "kb h",
+"text": "50%Offset",
+"label": "Offset",
+"labR": [
+650.31,
+54,
+36.17,
+13
+],
+"valR": [
+650.31,
+67,
+44,
+13
+],
+"knobR": [
+617.31,
+53,
+28,
+28
+],
+"color": "var(--accent)"
+},
+{
+"kind": "radio",
+"pid": "s.ftype",
+"idx": 0,
+"r": [
+1046.52,
+59,
+56.27,
+16
+],
+"tip": "Digital: the two EQ points are normal peaking filters on the trigger signal. Our interpretation.",
+"cls": "rad on",
+"text": "Digital"
+},
+{
+"kind": "radio",
+"pid": "s.ftype",
+"idx": 1,
+"r": [
+1108.78,
+59,
+53.09,
+16
+],
+"tip": "Notch: each EQ point cuts a narrow notch instead (its depth follows the gain value). Use it to remove a frequency from the trigger. Our interpretation.",
+"cls": "rad",
+"text": "Notch"
+},
+{
+"kind": "radio",
+"pid": "s.ftype",
+"idx": 2,
+"r": [
+1167.88,
+59,
+52.13,
+16
+],
+"tip": "Steep: each EQ point is doubled for twice the dB and a steeper edge. Our interpretation.",
+"cls": "rad",
+"text": "Steep"
+},
+{
+"kind": "knob",
+"pid": "s.inG",
+"idx": -1,
+"r": [
+88.23,
+275,
+55.52,
+74
+],
+"tip": "Input gain in dB for the trigger signal and the audio. Range -24 to +24 dB.",
+"cls": "kb",
+"text": "0.0 dBInput Gain",
+"label": "Input Gain",
+"labR": [
+88.23,
+336,
+55.52,
+13
+],
+"valR": [
+97.08,
+275,
+37.81,
+13
+],
+"knobR": [
+91.98,
+288,
+48,
+48
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.outG",
+"idx": -1,
+"r": [
+1133.84,
+275,
+64.31,
+74
+],
+"tip": "Output gain in dB after the ducking. Range -24 to +24 dB.",
+"cls": "kb",
+"text": "0.0 dBOutput Gain",
+"label": "Output Gain",
+"labR": [
+1133.84,
+336,
+64.31,
+13
+],
+"valR": [
+1147.09,
+275,
+37.81,
+13
+],
+"knobR": [
+1142,
+288,
+48,
+48
+],
+"color": "var(--accent)"
+},
+{
+"kind": "seg",
+"pid": "s.grid",
+"idx": 0,
+"r": [
+987.47,
+383,
+35.11,
+24
+],
+"tip": "Beat grid 1/16: lines and snapping every 1/16 note. In Host Sync it is also the trigger rate (our choice).",
+"cls": "",
+"text": "1/16"
+},
+{
+"kind": "seg",
+"pid": "s.grid",
+"idx": 1,
+"r": [
+1021.58,
+383,
+31.77,
+24
+],
+"tip": "Beat grid 1/8.",
+"cls": "",
+"text": "1/8"
+},
+{
+"kind": "seg",
+"pid": "s.grid",
+"idx": 2,
+"r": [
+1052.34,
+383,
+31.91,
+24
+],
+"tip": "Beat grid 1/4: one line per beat. In Host Sync the envelope restarts every beat.",
+"cls": "on",
+"text": "1/4"
+},
+{
+"kind": "seg",
+"pid": "s.grid",
+"idx": 3,
+"r": [
+1083.25,
+383,
+31.58,
+24
+],
+"tip": "Beat grid 1/2: every two beats.",
+"cls": "",
+"text": "1/2"
+},
+{
+"kind": "select",
+"pid": "s.span",
+"idx": -1,
+"r": [
+1154,
+383,
+66,
+24
+],
+"tip": "Time shown in the envelope displays. Auto picks the smallest span that fits the envelope. At 150 BPM one beat is 400 ms.",
+"cls": "sel",
+"text": "Auto1 beat2 beats4 beats",
+"opts": [
+"Auto",
+"1 beat",
+"2 beats",
+"4 beats"
+],
+"off": 0
+},
+{
+"kind": "knob",
+"pid": "s.split",
+"idx": -1,
+"r": [
+69,
+439,
+58,
+84
+],
+"tip": "Split frequency between the low band and the high band (Linkwitz-Riley, 24 dB per octave). Everything below is ducked by the Low Envelope, everything above by the High Envelope. Also draggable in the spectrum.",
+"cls": "kb",
+"text": "1.05 kHzSplit Freq",
+"label": "Split Freq",
+"labR": [
+70.33,
+510,
+55.34,
+13
+],
+"valR": [
+72.8,
+439,
+50.41,
+13
+],
+"knobR": [
+69,
+452,
+58,
+58
+],
+"color": "var(--accent)"
+},
+{
+"kind": "radio",
+"pid": "s.listen",
+"idx": 0,
+"r": [
+137,
+458,
+69.44,
+16
+],
+"tip": "Hear both bands (normal).",
+"cls": "rad on",
+"text": "All Bands"
+},
+{
+"kind": "radio",
+"pid": "s.listen",
+"idx": 1,
+"r": [
+137,
+478,
+69.44,
+16
+],
+"tip": "Hear only the low band, to tune its envelope.",
+"cls": "rad",
+"text": "Low Env"
+},
+{
+"kind": "radio",
+"pid": "s.listen",
+"idx": 2,
+"r": [
+137,
+498,
+69.44,
+16
+],
+"tip": "Hear only the high band, to tune its envelope.",
+"cls": "rad",
+"text": "High Env"
+},
+{
+"kind": "knob",
+"pid": "s.lowVol",
+"idx": -1,
+"r": [
+101.5,
+533,
+50,
+76
+],
+"tip": "Level of the low band after ducking, -24 to +6 dB.",
+"cls": "kb",
+"text": "0.0 dBLow Vol",
+"label": "Low Vol",
+"labR": [
+105.2,
+596,
+42.58,
+13
+],
+"valR": [
+107.59,
+533,
+37.81,
+13
+],
+"knobR": [
+101.5,
+546,
+50,
+50
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.hiVol",
+"idx": -1,
+"r": [
+230.5,
+533,
+50,
+76
+],
+"tip": "Level of the high band after ducking, -24 to +6 dB.",
+"cls": "kb",
+"text": "0.0 dBHigh Vol",
+"label": "High Vol",
+"labR": [
+233.22,
+596,
+44.56,
+13
+],
+"valR": [
+236.59,
+533,
+37.81,
+13
+],
+"knobR": [
+230.5,
+546,
+50,
+50
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.lStr",
+"idx": -1,
+"r": [
+339,
+437,
+50.45,
+72
+],
+"tip": "Strength: how deep the band is ducked at the trigger. 100% goes to silence, 50% to half the level.",
+"cls": "kb",
+"text": "92%Strength",
+"label": "Strength",
+"labR": [
+339,
+496,
+50.45,
+13
+],
+"valR": [
+354.77,
+437,
+18.91,
+13
+],
+"knobR": [
+341.22,
+450,
+46,
+46
+],
+"color": "#FFA600"
+},
+{
+"kind": "knob",
+"pid": "s.lAtk",
+"idx": -1,
+"r": [
+446.53,
+443,
+44.11,
+66
+],
+"tip": "Attack time: how long the band takes to go down after the trigger. 0 ms is instant (we ramp over a fraction of a millisecond to avoid clicks).",
+"cls": "kb",
+"text": "0.00 msAtk",
+"label": "Atk",
+"labR": [
+459.42,
+496,
+18.31,
+13
+],
+"valR": [
+446.53,
+443,
+44.11,
+13
+],
+"knobR": [
+448.58,
+456,
+40,
+40
+],
+"color": "#FFA600"
+},
+{
+"kind": "knob",
+"pid": "s.lAtkC",
+"idx": -1,
+"r": [
+547.7,
+451,
+53.13,
+58
+],
+"tip": "Attack curve: bends the attack. Above 0 it ducks quickly at first, below 0 it ducks slowly at first.",
+"cls": "kb",
+"text": "0%Curve Atk",
+"label": "Curve Atk",
+"labR": [
+547.7,
+496,
+53.13,
+13
+],
+"valR": [
+567.95,
+451,
+12.61,
+13
+],
+"knobR": [
+558.27,
+464,
+32,
+32
+],
+"color": "#FFA600"
+},
+{
+"kind": "knob",
+"pid": "s.lHold",
+"idx": -1,
+"r": [
+657.91,
+437,
+46,
+72
+],
+"tip": "Hold: how long the band stays fully ducked before it recovers.",
+"cls": "kb",
+"text": "4.00 msHold",
+"label": "Hold",
+"labR": [
+668.31,
+496,
+25.19,
+13
+],
+"valR": [
+658.84,
+437,
+44.11,
+13
+],
+"knobR": [
+657.91,
+450,
+46,
+46
+],
+"color": "#FFA600"
+},
+{
+"kind": "knob",
+"pid": "s.lRel",
+"idx": -1,
+"r": [
+760.97,
+443,
+40,
+66
+],
+"tip": "Release time: how long the band takes to come back to full level.",
+"cls": "kb",
+"text": "600 msRel",
+"label": "Rel",
+"labR": [
+771.89,
+496,
+18.14,
+13
+],
+"valR": [
+762.06,
+443,
+37.81,
+13
+],
+"knobR": [
+760.97,
+456,
+40,
+40
+],
+"color": "#FFA600"
+},
+{
+"kind": "knob",
+"pid": "s.lRelC",
+"idx": -1,
+"r": [
+858.05,
+451,
+52.95,
+58
+],
+"tip": "Release curve: bends the recovery. Above 0 it comes back quickly at first and eases in at the end, below 0 it stays down longer and snaps back.",
+"cls": "kb",
+"text": "+33%Curve Rel",
+"label": "Curve Rel",
+"labR": [
+858.05,
+496,
+52.95,
+13
+],
+"valR": [
+871.92,
+451,
+25.2,
+13
+],
+"knobR": [
+868.52,
+464,
+32,
+32
+],
+"color": "#FFA600"
+},
+{
+"kind": "knob",
+"pid": "s.hStr",
+"idx": -1,
+"r": [
+339,
+529,
+50.45,
+72
+],
+"tip": "Strength: how deep the band is ducked at the trigger. 100% goes to silence, 50% to half the level.",
+"cls": "kb",
+"text": "52%Strength",
+"label": "Strength",
+"labR": [
+339,
+588,
+50.45,
+13
+],
+"valR": [
+354.77,
+529,
+18.91,
+13
+],
+"knobR": [
+341.22,
+542,
+46,
+46
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "s.hAtk",
+"idx": -1,
+"r": [
+446.53,
+535,
+44.11,
+66
+],
+"tip": "Attack time: how long the band takes to go down after the trigger. 0 ms is instant (we ramp over a fraction of a millisecond to avoid clicks).",
+"cls": "kb",
+"text": "0.00 msAtk",
+"label": "Atk",
+"labR": [
+459.42,
+588,
+18.31,
+13
+],
+"valR": [
+446.53,
+535,
+44.11,
+13
+],
+"knobR": [
+448.58,
+548,
+40,
+40
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "s.hAtkC",
+"idx": -1,
+"r": [
+547.7,
+543,
+53.13,
+58
+],
+"tip": "Attack curve: bends the attack. Above 0 it ducks quickly at first, below 0 it ducks slowly at first.",
+"cls": "kb",
+"text": "0%Curve Atk",
+"label": "Curve Atk",
+"labR": [
+547.7,
+588,
+53.13,
+13
+],
+"valR": [
+567.95,
+543,
+12.61,
+13
+],
+"knobR": [
+558.27,
+556,
+32,
+32
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "s.hHold",
+"idx": -1,
+"r": [
+657.91,
+529,
+46,
+72
+],
+"tip": "Hold: how long the band stays fully ducked before it recovers.",
+"cls": "kb",
+"text": "20.0 msHold",
+"label": "Hold",
+"labR": [
+668.31,
+588,
+25.19,
+13
+],
+"valR": [
+658.84,
+529,
+44.11,
+13
+],
+"knobR": [
+657.91,
+542,
+46,
+46
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "s.hRel",
+"idx": -1,
+"r": [
+760.97,
+535,
+40,
+66
+],
+"tip": "Release time: how long the band takes to come back to full level.",
+"cls": "kb",
+"text": "300 msRel",
+"label": "Rel",
+"labR": [
+771.89,
+588,
+18.14,
+13
+],
+"valR": [
+762.06,
+535,
+37.81,
+13
+],
+"knobR": [
+760.97,
+548,
+40,
+40
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "s.hRelC",
+"idx": -1,
+"r": [
+858.05,
+543,
+52.95,
+58
+],
+"tip": "Release curve: bends the recovery. Above 0 it comes back quickly at first and eases in at the end, below 0 it stays down longer and snaps back.",
+"cls": "kb",
+"text": "+33%Curve Rel",
+"label": "Curve Rel",
+"labR": [
+858.05,
+588,
+52.95,
+13
+],
+"valR": [
+871.92,
+543,
+25.2,
+13
+],
+"knobR": [
+868.52,
+556,
+32,
+32
+],
+"color": "#FF7BB1"
+},
+{
+"kind": "knob",
+"pid": "s.e1f",
+"idx": -1,
+"r": [
+985.09,
+439,
+37.81,
+62
+],
+"tip": "EQ1 frequency on the trigger signal. Also draggable as a point in the spectrum.",
+"cls": "kb",
+"text": "200 HzFreq",
+"label": "Freq",
+"labR": [
+991.8,
+488,
+24.41,
+13
+],
+"valR": [
+985.09,
+439,
+37.81,
+13
+],
+"knobR": [
+986,
+452,
+36,
+36
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.e1g",
+"idx": -1,
+"r": [
+985.09,
+501,
+37.81,
+62
+],
+"tip": "EQ1 gain on the trigger signal, -18 to +18 dB. Boost a frequency to make the trigger react to it more, cut one to ignore it. The audio itself is not changed.",
+"cls": "kb",
+"text": "0.0 dBGain",
+"label": "Gain",
+"labR": [
+992.55,
+550,
+22.91,
+13
+],
+"valR": [
+985.09,
+501,
+37.81,
+13
+],
+"knobR": [
+986,
+514,
+36,
+36
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.e1w",
+"idx": -1,
+"r": [
+986,
+563,
+36,
+62
+],
+"tip": "EQ1 width as Q: low numbers are wide, high numbers are narrow. 0.2 to 12. Scroll over the point in the spectrum to change it.",
+"cls": "kb",
+"text": "Q 1.0Width",
+"label": "Width",
+"labR": [
+988.25,
+612,
+31.48,
+13
+],
+"valR": [
+988.25,
+563,
+31.5,
+13
+],
+"knobR": [
+986,
+576,
+36,
+36
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.e2f",
+"idx": -1,
+"r": [
+1126,
+439,
+36,
+62
+],
+"tip": "EQ2 frequency on the trigger signal. Also draggable as a point in the spectrum.",
+"cls": "kb",
+"text": "4 kHzFreq",
+"label": "Freq",
+"labR": [
+1131.8,
+488,
+24.41,
+13
+],
+"valR": [
+1128.25,
+439,
+31.5,
+13
+],
+"knobR": [
+1126,
+452,
+36,
+36
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.e2g",
+"idx": -1,
+"r": [
+1125.09,
+501,
+37.81,
+62
+],
+"tip": "EQ2 gain on the trigger signal, -18 to +18 dB. Boost a frequency to make the trigger react to it more, cut one to ignore it. The audio itself is not changed.",
+"cls": "kb",
+"text": "0.0 dBGain",
+"label": "Gain",
+"labR": [
+1132.55,
+550,
+22.91,
+13
+],
+"valR": [
+1125.09,
+501,
+37.81,
+13
+],
+"knobR": [
+1126,
+514,
+36,
+36
+],
+"color": "var(--accent)"
+},
+{
+"kind": "knob",
+"pid": "s.e2w",
+"idx": -1,
+"r": [
+1126,
+563,
+36,
+62
+],
+"tip": "EQ2 width as Q: low numbers are wide, high numbers are narrow. 0.2 to 12. Scroll over the point in the spectrum to change it.",
+"cls": "kb",
+"text": "Q 1.0Width",
+"label": "Width",
+"labR": [
+1128.25,
+612,
+31.48,
+13
+],
+"valR": [
+1128.25,
+563,
+31.5,
+13
+],
+"knobR": [
+1126,
+576,
+36,
+36
+],
+"color": "var(--accent)"
+}
+],
+"cv": [
+{
+"id": "",
+"cls": "",
+"r": [
+0,
+0,
+52,
+720
+],
+"tip": "Double-click the wood to reset the window to 100%.",
+"parent": "cheek"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+66,
+100,
+100,
+172
+],
+"tip": "Level of the trigger signal after Input Gain, left and right, in dB. Blue is safe, purple is the warning zone, pink is clipping.",
+"parent": "sidecol"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+180,
+84,
+922,
+286
+],
+"tip": "Main display. Left: the spectrum of the trigger signal with two draggable EQ points (what the trigger hears). Right: the envelope shapes for the low and high band. Drag points to edit. Choose what is shown with the buttons underneath.",
+"parent": "p2g"
+},
+{
+"id": "",
+"cls": "cv",
+"r": [
+1116,
+100,
+100,
+172
+],
+"tip": "Level of the audio after ducking and Output Gain, left and right, in dB. Blue is safe, purple is the warning zone, pink is clipping.",
+"parent": "sidecol"
+},
+{
+"id": "",
+"cls": "",
+"r": [
+1228,
+0,
+52,
+720
+],
+"tip": "Double-click the wood to reset the window to 100%.",
+"parent": "cheek"
+}
+],
+"txt": [
+{
+"t": "Multi",
+"c": "name",
+"r": [
+101,
+1.5,
+41.63,
+28
+],
+"fs": 23,
+"fw": 800,
+"mono": false,
+"it": true,
+"ls": 0.5,
+"col": [
+255,
+255,
+255,
+1
+],
+"tt": "none"
+},
+{
+"t": "Paw",
+"c": "I",
+"r": [
+143.63,
+1.5,
+36.31,
+28
+],
+"fs": 23,
+"fw": 800,
+"mono": false,
+"it": true,
+"ls": 0.5,
+"col": [
+2,
+235,
+186,
+1
+],
+"tt": "none"
+},
+{
+"t": "Compressor \u00b7 Studio 87",
+"c": "s87",
+"r": [
+101,
+26.5,
+130.19,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.6,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Trigger mode",
+"c": "cap",
+"r": [
+60,
+60.5,
+71.78,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Trigger",
+"c": "cap",
+"r": [
+708.31,
+60.5,
+41.83,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Filter type",
+"c": "cap",
+"r": [
+974.48,
+60.5,
+62.03,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Input",
+"c": "cap",
+"r": [
+101.02,
+84,
+29.97,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Output",
+"c": "cap",
+"r": [
+1146.69,
+84,
+38.61,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Grid",
+"c": "cap",
+"r": [
+960.27,
+388.5,
+23.2,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Span",
+"c": "cap",
+"r": [
+1124.83,
+388.5,
+25.17,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Multiband options",
+"c": "H4",
+"r": [
+69,
+419,
+121.56,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.6,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Listen",
+"c": "cap",
+"r": [
+137,
+441,
+34.97,
+13
+],
+"fs": 11,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+232,
+233,
+238,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Low envelope",
+"c": "H4",
+"r": [
+339,
+419,
+90.17,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.6,
+"col": [
+255,
+166,
+0,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "High envelope",
+"c": "H4",
+"r": [
+339,
+511,
+92.73,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.6,
+"col": [
+255,
+123,
+177,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "EQ1",
+"c": "H4",
+"r": [
+993.91,
+421,
+20.19,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.6,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "EQ2",
+"c": "H4",
+"r": [
+1132.91,
+421,
+22.19,
+16
+],
+"fs": 13,
+"fw": 700,
+"mono": false,
+"it": false,
+"ls": 1.6,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Trigger feed",
+"c": "LABEL",
+"r": [
+383.27,
+669.5,
+50.97,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "Level",
+"c": "LABEL",
+"r": [
+535.23,
+669.5,
+21.75,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 0,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "Comp vs Dry  RMS",
+"c": "rd",
+"r": [
+733.17,
+669.5,
+105.61,
+14
+],
+"fs": 11,
+"fw": 400,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "+0.1 dB",
+"c": "B",
+"r": [
+838.78,
+669.5,
+46.2,
+14
+],
+"fs": 11,
+"fw": 600,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+2,
+235,
+186,
+1
+],
+"tt": "none"
+},
+{
+"t": "Crest 9.6 to 10.8 dB",
+"c": "rd",
+"r": [
+884.98,
+669.5,
+145.2,
+14
+],
+"fs": 11,
+"fw": 400,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "-1.2 LU",
+"c": "B",
+"r": [
+1030.19,
+669.5,
+46.2,
+14
+],
+"fs": 11,
+"fw": 600,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+2,
+235,
+186,
+1
+],
+"tt": "none"
+},
+{
+"t": "at equal peak",
+"c": "rd",
+"r": [
+1076.39,
+669.5,
+92.41,
+14
+],
+"fs": 11,
+"fw": 400,
+"mono": true,
+"it": false,
+"ls": 0,
+"col": [
+244,
+245,
+247,
+1
+],
+"tt": "none"
+},
+{
+"t": "Preview rig, not plugin",
+"c": "tag",
+"r": [
+1183.8,
+670.5,
+121.34,
+12
+],
+"fs": 10,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1.4,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "uppercase"
+},
+{
+"t": "Studio 87 \u00b7 MultiPaw Compressor v1.0 design mockup",
+"c": "SPAN",
+"r": [
+64,
+701.5,
+268.55,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+},
+{
+"t": "1280 \u00d7 720 px",
+"c": "SPAN",
+"r": [
+1147.72,
+701.5,
+68.28,
+14
+],
+"fs": 12,
+"fw": 400,
+"mono": false,
+"it": false,
+"ls": 1,
+"col": [
+169,
+173,
+184,
+1
+],
+"tt": "none"
+}
+],
+"other": [
+{
+"tag": "DIV",
+"id": "cheekL",
+"cls": "cheek",
+"r": [
+0,
+0,
+52,
+720
+],
+"text": "",
+"tip": "Double-click the wood to reset the window to 100%."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "brand",
+"r": [
+62,
+4.5,
+176,
+34
+],
+"text": "MultiPawCompressor \u00b7 Studio 87",
+"tip": "MultiPaw Compressor by Studio 87: one plugin, two pages."
+},
+{
+"tag": "BUTTON",
+"id": "pgA",
+"cls": "",
+"r": [
+247,
+9,
+112.69,
+25
+],
+"text": "Compressor",
+"tip": "Page 1: Multiband Compressor. Up to four bands, each with its own compressor, limiter and dynamic pattern. The small lamp shows if this page is processing sound. Press P to flip pages."
+},
+{
+"tag": "SPAN",
+"id": "pwA",
+"cls": "pwr on",
+"r": [
+257,
+17,
+9,
+9
+],
+"text": "",
+"tip": "Compressor page processing on or off. Click the lamp to switch it."
+},
+{
+"tag": "BUTTON",
+"id": "pgB",
+"cls": "on",
+"r": [
+359.69,
+9,
+99.38,
+25
+],
+"text": "Sidechain",
+"tip": "Page 2: Multiband Sidechain. Pumping and ducking for a low and a high band, triggered by audio, MIDI or the host beat. The small lamp shows if this page is processing sound. Press P to flip pages."
+},
+{
+"tag": "SPAN",
+"id": "pwB",
+"cls": "pwr",
+"r": [
+370.69,
+17,
+9,
+9
+],
+"text": "",
+"tip": "Sidechain page processing on or off. Click the lamp to switch it. It starts off so the sidechain does not pump until you want it."
+},
+{
+"tag": "BUTTON",
+"id": "pPrev",
+"cls": "btn",
+"r": [
+538.06,
+9.09,
+33.34,
+24.8
+],
+"text": "\u25c0",
+"tip": "Previous preset of this page."
+},
+{
+"tag": "BUTTON",
+"id": "pName",
+"cls": "btn pname",
+"r": [
+575.41,
+8.5,
+176,
+26
+],
+"text": "Offbeat Pumper",
+"tip": "Open the preset browser for this page. Double-click to rename your own presets."
+},
+{
+"tag": "BUTTON",
+"id": "pNext",
+"cls": "btn",
+"r": [
+755.41,
+9.09,
+33.34,
+24.8
+],
+"text": "\u25b6",
+"tip": "Next preset of this page."
+},
+{
+"tag": "BUTTON",
+"id": "pSave",
+"cls": "btn",
+"r": [
+792.75,
+9.09,
+45.08,
+24.8
+],
+"text": "Save",
+"tip": "Save these settings as your own preset. Asks before overwriting."
+},
+{
+"tag": "BUTTON",
+"id": "bBypass",
+"cls": "btn",
+"r": [
+915.83,
+9.09,
+57.36,
+24.8
+],
+"text": "Bypass",
+"tip": "Bypass (B): hear the dry signal, delayed to match, to compare with the processed sound. The meters keep moving."
+},
+{
+"tag": "BUTTON",
+"id": "bGuide",
+"cls": "btn",
+"r": [
+981.19,
+9.09,
+49.8,
+24.8
+],
+"text": "Guide",
+"tip": "Short guide, what is verified and what is our own choice, and keyboard shortcuts."
+},
+{
+"tag": "BUTTON",
+"id": "bSettings",
+"cls": "btn",
+"r": [
+1038.98,
+9.09,
+63.81,
+24.8
+],
+"text": "Settings",
+"tip": "Info bubbles, power saving, colour look."
+},
+{
+"tag": "BUTTON",
+"id": "bAbout",
+"cls": "btn",
+"r": [
+1110.8,
+9.09,
+107.2,
+24.8
+],
+"text": "About & Support",
+"tip": "About, support and where your files live."
+},
+{
+"tag": "SPAN",
+"id": "",
+"cls": "pwr",
+"r": [
+760.14,
+61.5,
+11,
+11
+],
+"text": "",
+"tip": "Flashes every time the envelope is triggered."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb on yel",
+"r": [
+60,
+383,
+37.58,
+24
+],
+"text": "FFT",
+"tip": "Show only the spectrum and EQ."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+101.58,
+383,
+39.3,
+24
+],
+"text": "Low",
+"tip": "Show only the low band envelope."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+144.88,
+383,
+29.73,
+24
+],
+"text": "Hi",
+"tip": "Show only the high band envelope."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+178.61,
+383,
+55.77,
+24
+],
+"text": "FFT | Hi",
+"tip": "Spectrum and high envelope side by side."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+238.38,
+383,
+65.33,
+24
+],
+"text": "FFT | Low",
+"tip": "Spectrum and low envelope side by side."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+307.7,
+383,
+57.48,
+24
+],
+"text": "Low | Hi",
+"tip": "Low and high envelope side by side."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+369.19,
+383,
+79.94,
+24
+],
+"text": "FFT | Low/Hi",
+"tip": "Spectrum on the left, low envelope over high envelope on the right."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+453.13,
+383,
+83.52,
+24
+],
+"text": "Low | Hi | FFT",
+"tip": "Low, high and spectrum in three columns."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb yel",
+"r": [
+540.64,
+383,
+55.36,
+24
+],
+"text": "System",
+"tip": "System view: trigger monitor and status."
+},
+{
+"tag": "BUTTON",
+"id": "",
+"cls": "tgb",
+"r": [
+608.37,
+489,
+33.27,
+20
+],
+"text": "Link",
+"tip": "Link: low and high envelopes move together. Turning a knob on one copies the value to the other."
+},
+{
+"tag": "BUTTON",
+"id": "rigPlay",
+"cls": "btn",
+"r": [
+62,
+664.09,
+58.88,
+24.8
+],
+"text": "\u25b6 Play",
+"tip": "Start or stop the preview sound (Space). The meters and displays move even when it is stopped."
+},
+{
+"tag": "SELECT",
+"id": "rigSrc",
+"cls": "",
+"r": [
+128.88,
+664.5,
+172,
+24
+],
+"text": "Full mix loopHardstyle kick + offbeat bassSupersaw leadDrum ",
+"tip": "Test sound for the preview rig."
+},
+{
+"tag": "BUTTON",
+"id": "rigFile",
+"cls": "btn",
+"r": [
+308.88,
+664.09,
+66.39,
+24.8
+],
+"text": "Load file",
+"tip": "Load your own audio file for the preview. Nothing is uploaded; it is decoded in this page only."
+},
+{
+"tag": "LABEL",
+"id": "",
+"cls": "",
+"r": [
+383.27,
+664.5,
+143.97,
+24
+],
+"text": "Trigger feed Kick trackSame signal",
+"tip": "Sidechain feed for page 2 in Audio mode. Kick track: a separate kick plays the trigger, as if a kick track was routed in. Same signal: the sound itself triggers the pumping."
+},
+{
+"tag": "SELECT",
+"id": "rigFeed",
+"cls": "",
+"r": [
+438.23,
+664.5,
+89,
+24
+],
+"text": "Kick trackSame signal",
+"tip": ""
+},
+{
+"tag": "LABEL",
+"id": "",
+"cls": "",
+"r": [
+535.23,
+664.5,
+100.75,
+24
+],
+"text": "Level QuietLoudMastered",
+"tip": "Preview level (preview only). The factory presets are made for loud, near-mastered material, so the quiet test sounds barely touch them. Quiet: as generated. Loud: up to 6 dB hotter, peaks kept at -1 dB. Mastered: peaks at -0.5 dB, like a finished track. No level ever clips the rig or tickles the master limiter on its own, so 0% Mix is the untouched sound. The Input gain knob of the plugin does the same job on your own music."
+},
+{
+"tag": "SELECT",
+"id": "rigLvl",
+"cls": "",
+"r": [
+560.98,
+664.5,
+75,
+24
+],
+"text": "QuietLoudMastered",
+"tip": ""
+},
+{
+"tag": "BUTTON",
+"id": "rigLM",
+"cls": "tgb",
+"r": [
+643.98,
+664.5,
+73.19,
+24
+],
+"text": "Level match",
+"tip": "Level match (preview only): the compressed sound is turned up or down to the same average loudness as the dry sound, so A/B (B key) compares density, punch and sustain instead of volume. Uses a 0.5 s average. Loops play at 150 BPM; Host Sync and DPC follow that transport."
+},
+{
+"tag": "SPAN",
+"id": "rigRd",
+"cls": "rd",
+"r": [
+733.17,
+669.5,
+435.63,
+14
+],
+"text": "Comp vs Dry  RMS +0.1 dB  Crest 9.6 to 10.8 dB  -1.2 LU at e",
+"tip": "Live comparison of the compressor page against the dry input (after input gain), averaged over about half a second. RMS: average level change in dB. Crest: peak minus RMS, dry then compressed. LU at equal peak: how much louder the compressed sound can be played before its peak reaches the dry peak (dry crest minus compressed crest). Mix, autogain and Level match all show up here."
+},
+{
+"tag": "DIV",
+"id": "",
+"cls": "tag",
+"r": [
+1176.8,
+668.5,
+135.34,
+16
+],
+"text": "Preview rig, not plugin",
+"tip": "This strip only exists in the design mockup. The plugin itself has no preview rig."
+},
+{
+"tag": "DIV",
+"id": "cheekR",
+"cls": "cheek",
+"r": [
+1228,
+0,
+52,
+720
+],
+"text": "",
+"tip": "Double-click the wood to reset the window to 100%."
+},
+{
+"tag": "BUTTON",
+"id": "zMinus",
+"cls": "btn",
+"r": [
+434.89,
+728,
+24.67,
+20.8
+],
+"text": "\u2212",
+"tip": ""
+},
+{
+"tag": "BUTTON",
+"id": "zPct",
+"cls": "btn",
+"r": [
+465.56,
+728,
+47.11,
+20.8
+],
+"text": "100%",
+"tip": ""
+},
+{
+"tag": "BUTTON",
+"id": "zPlus",
+"cls": "btn",
+"r": [
+518.67,
+728,
+24.67,
+20.8
+],
+"text": "+",
+"tip": ""
+}
+],
+"box": [
+{
+"c": "main",
+"r": [
+52,
+0,
+1176,
+720
+],
+"bg": [
+22,
+23,
+26,
+1
+],
+"bd": 0,
+"bc": [
+244,
+245,
+247,
+1
+],
+"rad": 0
+},
+{
+"c": "hdr",
+"r": [
+52,
+0,
+1176,
+44
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 0,
+"bc": [
+244,
+245,
+247,
+1
+],
+"rad": 0
+},
+{
+"c": "flip",
+"r": [
+246,
+8,
+214.06,
+27
+],
+"bg": [
+0,
+0,
+0,
+0
+],
+"bd": 1,
+"bc": [
+205,
+146,
+254,
+1
+],
+"rad": 6
+},
+{
+"c": "pwr",
+"r": [
+760.14,
+61.5,
+11,
+11
+],
+"bg": [
+42,
+44,
+51,
+1
+],
+"bd": 0,
+"bc": [
+244,
+245,
+247,
+1
+],
+"rad": 50
+},
+{
+"c": "box",
+"r": [
+60,
+414,
+262,
+238
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 4
+},
+{
+"c": "box",
+"r": [
+330,
+414,
+590,
+238
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 4
+},
+{
+"c": "box",
+"r": [
+928,
+414,
+292,
+238
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 4
+},
+{
+"c": "rig",
+"r": [
+52,
+656,
+1176,
+40
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 0
+},
+{
+"c": "tag",
+"r": [
+1176.8,
+668.5,
+135.34,
+16
+],
+"bg": [
+0,
+0,
+0,
+0
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 3
+},
+{
+"c": "foot",
+"r": [
+52,
+696,
+1176,
+24
+],
+"bg": [
+30,
+32,
+36,
+1
+],
+"bd": 1,
+"bc": [
+51,
+54,
+61,
+1
+],
+"rad": 0
+}
+]
+}
+]

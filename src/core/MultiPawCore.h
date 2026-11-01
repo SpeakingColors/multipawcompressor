@@ -294,7 +294,7 @@ class Engine {
 public:
     double fs = 48000;
     // meters for the editor (written by process, read by the GUI; plain floats, benign races)
-    float prePk[2] = {0, 0}, postPk[2] = {0, 0}, mGr = 0, bandGr[NB] = {0, 0, 0, 0}, bandLvl[NB] = {-90, -90, -90, -90}, bandLimGr[NB] = {0, 0, 0, 0};
+    float prePk[2] = {0, 0}, postPk[2] = {0, 0}, preMs[2] = {0, 0}, postMs[2] = {0, 0}, mGr = 0, bandGr[NB] = {0, 0, 0, 0}, bandLvl[NB] = {-90, -90, -90, -90}, bandLimGr[NB] = {0, 0, 0, 0};
     float scLow = 1, scHigh = 1;
     bool bypass = false;
 
@@ -453,6 +453,7 @@ public:
             if (!std::isfinite(ol) || !std::isfinite(orr)) { ol = orr = 0; reset(); }
             L[i] = (float)ol; R[i] = (float)orr; sampleCount++;
             postP[0] = std::max(postP[0], std::fabs(ol)); postP[1] = std::max(postP[1], std::fabs(orr));
+            { const float k = 0.00015f; preMs[0] += ((float)(dl * dl) - preMs[0]) * k; preMs[1] += ((float)(dr * dr) - preMs[1]) * k; postMs[0] += ((float)(ol * ol) - postMs[0]) * k; postMs[1] += ((float)(orr * orr) - postMs[1]) * k; }
         }
         free += n * bpm / 60.0 / fs; (void)spb;
         const float dec = (float)std::pow(0.9, n / 512.0);

@@ -4,8 +4,9 @@ import json
 d=json.load(open('tools/params.json'))
 skip=('.view','.zoom','.sel','.patI','.span','.fft','.vu','.link','.dGrid')
 rows=[]
+uirows=[]
 for p in d:
-    if p['id'].endswith(skip) or p['id'] in ('m.fft','m.vu','s.link'): continue
+    if p['id'].endswith(skip) or p['id'] in ('m.fft','m.vu','s.link'): uirows.append(p); continue
     rows.append(p)
 extra=[
  dict(id='m.linear',min=0,max=1,def_=1,int=1,name='Linear Phase Crossovers'),
@@ -29,7 +30,10 @@ for p in rows:
     out.append('    {"%s","%s",%s,%s,%s,%s,%s},'%(p['id'],nice(p['id']),F(p['min']),F(p['max']),F(p['def']),'true' if p.get('log') else 'false','true' if p.get('int') else 'false'))
 for p in extra:
     out.append('    {"%s","%s",%s,%s,%s,false,%s},'%(p['id'],p['name'],F(p['min']),F(p['max']),F(p['def_']),'true' if p['int'] else 'false'))
-out+=['};','inline constexpr int kNumParams = (int)(sizeof(kParams)/sizeof(kParams[0]));','}']
+out+=['};','inline constexpr int kNumParams = (int)(sizeof(kParams)/sizeof(kParams[0]));','// window-only settings (not automatable): stored in the saved state as properties "ui.<id>"','inline constexpr PDef kUi[] = {']
+for p in uirows:
+    out.append('    {"%s","%s",%s,%s,%s,%s,%s},'%(p['id'],p['id'],F(p['min']),F(p['max']),F(p['def']),'true' if p.get('log') else 'false','true' if p.get('int') else 'false'))
+out+=['};','inline constexpr int kNumUi = (int)(sizeof(kUi)/sizeof(kUi[0]));','}']
 open('src/plugin/ParamTable.h','w').write('\n'.join(out)+'\n')
 print(len(rows)+len(extra),'params')
 

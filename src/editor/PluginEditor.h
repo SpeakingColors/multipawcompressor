@@ -1,10 +1,28 @@
 #pragma once
 #include "../plugin/PluginProcessor.h"
 
-// TEMPORARY development stand-in: a plain parameter list. The native port of the approved
-// mockup window replaces this before any release.
-class MultiPawEditor : public juce::GenericAudioProcessorEditor
+// Native port of the approved mockup window (the mockup IS the plugin). The layout comes from
+// tools/layout.json via tools/gen_layout.py; one drawing surface draws boxes, texts, controls and displays.
+class MultiPawEditor : public juce::AudioProcessorEditor, private juce::Timer
 {
 public:
-    explicit MultiPawEditor (MultiPawProcessor& p) : juce::GenericAudioProcessorEditor (p) { setSize (720, 640); }
+    explicit MultiPawEditor (MultiPawProcessor&);
+    ~MultiPawEditor() override;
+
+    void paint (juce::Graphics&) override;
+    void resized() override;
+    void mouseDown (const juce::MouseEvent&) override;
+    void mouseDrag (const juce::MouseEvent&) override;
+    void mouseUp (const juce::MouseEvent&) override;
+    void mouseMove (const juce::MouseEvent&) override;
+    void mouseExit (const juce::MouseEvent&) override;
+    void mouseDoubleClick (const juce::MouseEvent&) override;
+    void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails&) override;
+    bool keyPressed (const juce::KeyPress&) override;
+
+    struct Impl;
+private:
+    void timerCallback() override;
+    std::unique_ptr<Impl> d;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiPawEditor)
 };

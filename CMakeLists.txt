@@ -48,7 +48,10 @@ set(MP_SOURCES
     src/plugin/ParamTable.h
     src/plugin/ParamMap.h
     src/core/MultiPawCore.h
-    src/editor/PluginEditor.h)
+    src/editor/PluginEditor.h
+    src/editor/PluginEditor.cpp
+    src/editor/Theme.h
+    src/editor/Layout.h)
 target_sources(MultiPawCompressor PRIVATE ${MP_SOURCES})
 
 target_compile_definitions(MultiPawCompressor PUBLIC
@@ -59,5 +62,15 @@ target_compile_definitions(MultiPawCompressor PUBLIC
     JUCE_REPORT_APP_USAGE=0)
 
 target_link_libraries(MultiPawCompressor
-    PRIVATE MultiPawAssets juce::juce_audio_utils
+    PRIVATE MultiPawAssets juce::juce_audio_utils juce::juce_dsp
     PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_warning_flags)
+
+# Offscreen window renderer for checking the editor against the mockup (not part of releases).
+option(MP_BUILD_SNAPSHOT "Build the editor snapshot tool" OFF)
+if(MP_BUILD_SNAPSHOT)
+    juce_add_console_app(MultiPawSnapshot PRODUCT_NAME "MultiPawSnapshot")
+    target_sources(MultiPawSnapshot PRIVATE tools/snapshot.cpp ${MP_SOURCES})
+    target_compile_definitions(MultiPawSnapshot PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
+        JUCE_STANDALONE_APPLICATION=1 JUCE_MODAL_LOOPS_PERMITTED=1 JucePlugin_Name="MultiPaw Compressor" JucePlugin_VersionString="0.1.0")
+    target_link_libraries(MultiPawSnapshot PRIVATE MultiPawAssets juce::juce_audio_utils juce::juce_dsp juce::juce_recommended_config_flags)
+endif()

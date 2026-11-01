@@ -140,4 +140,33 @@ inline constexpr PDef kParams[] = {
     {"m.bypass","Bypass",0.0f,1.0f,0.0f,false,true},
 };
 inline constexpr int kNumParams = (int)(sizeof(kParams)/sizeof(kParams[0]));
+// window-only settings (not automatable): stored in the saved state as properties "ui.<id>"
+inline constexpr PDef kUi[] = {
+    {"m.fft","m.fft",0.0f,3.0f,1.0f,false,true},
+    {"m.vu","m.vu",0.0f,1.0f,0.0f,false,true},
+    {"b0.view","b0.view",0.0f,2.0f,0.0f,false,true},
+    {"b0.zoom","b0.zoom",0.0f,1.0f,0.4f,false,false},
+    {"b0.dGrid","b0.dGrid",0.0f,2.0f,0.0f,false,true},
+    {"b0.sel","b0.sel",-1.0f,20.0f,-1.0f,false,true},
+    {"b0.patI","b0.patI",0.0f,9.0f,0.0f,false,true},
+    {"b1.view","b1.view",0.0f,2.0f,0.0f,false,true},
+    {"b1.zoom","b1.zoom",0.0f,1.0f,0.4f,false,false},
+    {"b1.dGrid","b1.dGrid",0.0f,2.0f,0.0f,false,true},
+    {"b1.sel","b1.sel",-1.0f,20.0f,-1.0f,false,true},
+    {"b1.patI","b1.patI",0.0f,9.0f,0.0f,false,true},
+    {"b2.view","b2.view",0.0f,2.0f,0.0f,false,true},
+    {"b2.zoom","b2.zoom",0.0f,1.0f,0.4f,false,false},
+    {"b2.dGrid","b2.dGrid",0.0f,2.0f,0.0f,false,true},
+    {"b2.sel","b2.sel",-1.0f,20.0f,-1.0f,false,true},
+    {"b2.patI","b2.patI",0.0f,9.0f,0.0f,false,true},
+    {"b3.view","b3.view",0.0f,2.0f,0.0f,false,true},
+    {"b3.zoom","b3.zoom",0.0f,1.0f,0.4f,false,false},
+    {"b3.dGrid","b3.dGrid",0.0f,2.0f,0.0f,false,true},
+    {"b3.sel","b3.sel",-1.0f,20.0f,-1.0f,false,true},
+    {"b3.patI","b3.patI",0.0f,9.0f,0.0f,false,true},
+    {"s.link","s.link",0.0f,1.0f,0.0f,false,true},
+    {"s.view","s.view",0.0f,8.0f,0.0f,false,true},
+    {"s.span","s.span",0.0f,3.0f,0.0f,false,true},
+};
+inline constexpr int kNumUi = (int)(sizeof(kUi)/sizeof(kUi[0]));
 }
