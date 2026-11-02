@@ -51,7 +51,8 @@ set(MP_SOURCES
     src/editor/PluginEditor.h
     src/editor/PluginEditor.cpp
     src/editor/Theme.h
-    src/editor/Layout.h)
+    src/editor/Layout.h
+    src/editor/Presets.h)
 target_sources(MultiPawCompressor PRIVATE ${MP_SOURCES})
 
 target_compile_definitions(MultiPawCompressor PUBLIC

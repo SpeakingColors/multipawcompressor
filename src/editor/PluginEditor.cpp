@@ -1,6 +1,7 @@
 #include "PluginEditor.h"
 #include "Layout.h"
 #include "Theme.h"
+#include "Presets.h"
 #include <juce_dsp/juce_dsp.h>
 #include <complex>
 
@@ -139,6 +140,7 @@ struct MultiPawEditor::Impl
         if (lk.isNotEmpty()) look = lk[0];
         tips = (bool) proc.getSetting (setting::tips, true);
         page = (int) proc.getSetting (setting::page, 0);
+        presetName[0] = proc.getSetting (setting::preset1, "").toString(); presetName[1] = proc.getSetting (setting::preset2, "").toString();
         build();
     }
 
@@ -1149,8 +1151,67 @@ struct MultiPawEditor::Impl
             g.drawText (mixNote(), Rectangle<float> (627, 52, 150, 28), Justification::topLeft, true);
         }
     }
-    String bandPresetName (int b) const { juce::ignoreUnused (b); return "- Select -"; }
+    String bandPresetName (int b) const { const int k = (int) get ("b" + String (b) + ".sel"); return k >= 0 && k < presets::kNumBand ? String (presets::kBand[k].name) : String ("- Select -"); }
     String mixNote() const { const float m = get ("m.mix"); return m <= 1 ? "Dry: the compressor is bypassed by the Mix knob." : m >= 99 ? "Fully compressed." : "New York tip: 50% Mix with fast, deep compression"; }
+
+
+    // ---------------------------------------------------------------- presets
+    bool pageKey (const String& id, int pg) const
+    {
+        const bool sc = id.startsWith ("s.");
+        if (pg == 1 != sc) return false;
+        for (const char* suf : { ".view", ".zoom", ".fft", ".vu", ".span", ".on" }) if (id.endsWith (suf)) return false;
+        return true;
+    }
+    std::vector<int> bankOf (int pg) const { std::vector<int> v; for (int i = 0; i < presets::kNumPre; ++i) if (presets::kPre[i].page == pg) v.push_back (i); return v; }
+    void applyPreset (int idx)
+    {
+        const auto& pr = presets::kPre[idx]; const int pg = pr.page;
+        auto each = [&] (auto fn) { for (const auto& dd : mp::kParams) fn (String (dd.id)); for (const auto& dd : mp::kUi) fn (String (dd.id)); };
+        each ([&] (const String& id) { if (pageKey (id, pg)) { const auto* dd = defOf (id); if (dd) setUser (id, dd->df); } });
+        for (int i = 0; i < pr.n; ++i) setUser (pr.kv[i].id, pr.kv[i].v);
+        setUser (pg == 0 ? "m.on" : "s.on", 1.0f);
+        if (pg == 0) for (int b = 0; b < 4; ++b) proc.setPattern (b, patternNodes ((int) get ("b" + String (b) + ".patI")));
+        presetName[pg] = pr.name; proc.setSetting (pg == 0 ? setting::preset1 : setting::preset2, pr.name);
+        toast (String ("Loaded ") + pr.name); ed.repaint();
+    }
+    void stepPreset (int dir)
+    {
+        auto bank = bankOf (page); if (bank.empty()) return;
+        int cur = -1; for (size_t i = 0; i < bank.size(); ++i) if (presetName[page] == presets::kPre[bank[i]].name) cur = (int) i;
+        cur = cur < 0 ? (dir > 0 ? 0 : (int) bank.size() - 1) : (cur + dir + (int) bank.size()) % (int) bank.size();
+        applyPreset (bank[(size_t) cur]);
+    }
+    void presetMenu (Point<int> where)
+    {
+        PopupMenu m; StringArray types;
+        auto bank = bankOf (page);
+        for (int i : bank) types.addIfNotAlreadyThere (presets::kPre[i].type);
+        for (const auto& ty : types)
+        {
+            PopupMenu sub;
+            for (int i : bank) if (String (presets::kPre[i].type) == ty) sub.addItem (i + 1, presets::kPre[i].name, true, presetName[page] == presets::kPre[i].name);
+            m.addSubMenu (ty, sub);
+        }
+        m.showMenuAsync (PopupMenu::Options().withTargetScreenArea (Rectangle<int> (where.x, where.y, 1, 1)), [this] (int r) { if (r > 0) applyPreset (r - 1); });
+    }
+    void applyBand (int b, int k)
+    {
+        const auto& bp = presets::kBand[k]; const String bs = "b" + String (b) + ".";
+        for (int i = 0; i < bp.n; ++i) setUser (bs + bp.kv[i].id, bp.kv[i].v);
+        setUser (bs + "sel", (float) k);
+    }
+    void stepBand (int b, int dir)
+    {
+        int k = (int) get ("b" + String (b) + ".sel");
+        k = k < 0 ? (dir > 0 ? 0 : presets::kNumBand - 1) : (k + dir + presets::kNumBand) % presets::kNumBand; applyBand (b, k);
+    }
+    void bandMenu (int b, Point<int> where)
+    {
+        PopupMenu m; const int cur = (int) get ("b" + String (b) + ".sel");
+        for (int k = 0; k < presets::kNumBand; ++k) m.addItem (k + 1, presets::kBand[k].name, true, k == cur);
+        m.showMenuAsync (PopupMenu::Options().withTargetScreenArea (Rectangle<int> (where.x, where.y, 1, 1)), [this, b] (int r) { if (r > 0) applyBand (b, r - 1); });
+    }
 
     // ---------------------------------------------------------------- actions
     void toast (const String& s) { toastText = s; toastTicks = 70; ed.repaint(); }
@@ -1193,11 +1254,14 @@ struct MultiPawEditor::Impl
         else if (a == "Gain Red.") setUser (bs + "view", 1.0f);
         else if (a == "DPC") setUser (bs + "view", 2.0f);
         else if (page == 1 && viewIndex (a) >= 0) setUser ("s.view", (float) viewIndex (a));
-        else if (a == "pPrev" || a == "pNext" || a == "pName") toast ("Factory presets arrive with the next build");
+        else if (a == "pPrev") stepPreset (-1);
+        else if (a == "pNext") stepPreset (1);
+        else if (a == "pName") presetMenu (screenPt);
         else if (a == "pSave") toast ("Saving presets arrives with the next build");
-        else if (a == "bGuide" || a == "bSettings" || a == "bAbout") aboutBox (a);
-        else if (it.cls.contains ("btn") && it.text.contains (U ("\xe2\x97\x80"))) toast ("Band presets arrive with the next build");
-        else if (it.cls.contains ("btn") && it.text.contains (U ("\xe2\x96\xb6"))) toast ("Band presets arrive with the next build");
+        else if (a == "bSettings") settingsMenu (screenPt);
+        else if (a == "bGuide" || a == "bAbout") aboutBox (a);
+        else if (it.band >= 0 && it.text.contains (U ("\xe2\x97\x80"))) stepBand (it.band, -1);
+        else if (it.band >= 0 && it.text.contains (U ("\xe2\x96\xb6"))) stepBand (it.band, 1);
     }
     String muteSoloBandId (const Item& it, const char* what) const
     {
@@ -1206,10 +1270,23 @@ struct MultiPawEditor::Impl
         for (int i = 0; i < n; ++i) { const float x0 = gx + fxp (ed[(size_t) i], 0, pw), x1 = gx + fxp (ed[(size_t) i + 1], 0, pw); if (cx >= x0 && cx <= x1) return "b" + String (i) + "." + what; }
         return "b0." + String (what);
     }
+    void settingsMenu (Point<int> where)
+    {
+        PopupMenu m; m.addSectionHeader ("Settings");
+        m.addItem (1, "Info bubbles", true, tips);
+        PopupMenu lk; lk.addItem (11, "A  neon navy", true, look == 'A'); lk.addItem (12, "B  purple soda pop", true, look == 'B'); lk.addItem (13, "C  charcoal", true, look == 'C');
+        m.addSubMenu ("Colour look", lk);
+        m.showMenuAsync (PopupMenu::Options().withTargetScreenArea (Rectangle<int> (where.x, where.y, 1, 1)), [this] (int r)
+        {
+            if (r == 1) { tips = ! tips; proc.setSetting (setting::tips, tips); }
+            else if (r >= 11 && r <= 13) { look = (char) ('A' + (r - 11)); proc.setSetting (setting::look, String::charToString ((juce::juce_wchar) look)); }
+            ed.repaint();
+        });
+    }
     void aboutBox (const String& which)
     {
         String msg;
-        if (which == "bGuide") msg = "Multiband compressor on page 1, multiband sidechain on page 2. Hover any control for an info bubble. Double-click a knob to reset it. Shift while dragging for fine steps. Mix at 0% is the untouched, delayed input.";
+        if (which == "bGuide") msg = "Page 1: multiband compressor. Page 2: multiband sidechain (pumping and ducking). Hover any control for an info bubble. Double-click a knob to reset it; Shift while dragging for fine steps. Keys: B bypass, P flip pages. Double-click a crossover line, level handle or EQ point to reset it. Mix at 0% is the untouched, delayed input.";
         else if (which == "bSettings") msg = "Info bubbles and colour looks: use the System menu for engine options. (Look and bubble settings dialog arrives with the next build.)";
         else msg = "MultiPaw Compressor by Studio 87. Free and open source (AGPL-3.0-or-later). No telemetry, no data collection. https://github.com/SpeakingColors/multipawcompressor";
         auto opts = MessageBoxOptions().withIconType (MessageBoxIconType::NoIcon).withTitle ("MultiPaw Compressor").withMessage (msg).withButton ("OK");
@@ -1232,6 +1309,7 @@ struct MultiPawEditor::Impl
     {
         const auto p = toLayout (e.position); dragItem = -1; dragKind = {};
         if (page == 0) for (const auto& m : msRects) if (m.r.contains (p)) { const String id = "b" + String (m.band) + (m.solo ? ".solo" : ".mute"); setUser (id, get (id) > 0.5f ? 0.0f : 1.0f); return; }
+        if (page == 0) for (int b = 0; b < bands(); ++b) { const float x = b == 0 ? 176.0f : b == 1 ? 467.0f : b == 2 ? 759.0f : 1050.0f; if (Rectangle<float> (x, 314, 116, 22).contains (p)) { bandMenu (b, ed.localPointToGlobal (e.getPosition())); return; } }
         const int i = hitTest (p);
         if (i < 0) return;
         const auto& it = items[(size_t) i]; dragItem = i; dragStart = e.position; dragGesture = false;
