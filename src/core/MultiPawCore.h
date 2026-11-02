@@ -117,8 +117,8 @@ struct XO {
 
 // ---------------------------------------------------------------- limiter and delay
 struct LL {
-    int M = 0, w = 0, la = 0, h = 0, t = 0, n = 0;
-    std::vector<float> bl, br, dv, avg; std::vector<int> dq;
+    int M = 0, w = 0, la = 0; int64_t h = 0, t = 0, n = 0;
+    std::vector<float> bl, br, dv, avg; std::vector<int64_t> dq;
     double sum = 0, g = 1, gr = 0, ol = 0, orr = 0;
     void init(int maxLA) { M = maxLA + 4; bl.assign(M, 0); br.assign(M, 0); dv.assign(M, 1); avg.assign(M, 1); dq.assign(M, 0); la = 0; setLA(std::max(1, maxLA / 2)); }
     void setLA(int l) {
@@ -129,12 +129,12 @@ struct LL {
     void proc(double l, double r, double ceil, double kr, bool on) {
         bl[w] = (float)l; br[w] = (float)r;
         double p = std::max(std::fabs(l), std::fabs(r)), gt = (on && p > ceil) ? ceil / p : 1.0;
-        int idx = n++;
+        int64_t idx = n++;
         while (t > h && dv[(t - 1) % M] >= gt) t--;
         dq[t % M] = idx; dv[t % M] = (float)gt; t++;
         while (dq[h % M] <= idx - la) h++;
         double gm = dv[h % M];
-        int ai = idx % la; sum += gm - avg[ai]; avg[ai] = (float)gm;
+        int ai = (int)(idx % la); sum += gm - avg[ai]; avg[ai] = (float)gm;
         double ga = std::min(1.0, sum / la);
         g = ga < g ? ga : g + (ga - g) * kr;
         int rd = (w - (la - 1) + M) % M; ol = bl[rd] * g; orr = br[rd] * g; w = (w + 1) % M;

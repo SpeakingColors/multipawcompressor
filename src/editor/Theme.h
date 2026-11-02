@@ -28,7 +28,8 @@ inline juce::Font font (FontKind k, float px)
     static const auto brand   = juce::Typeface::createSystemTypefaceFor (BinaryData::BarlowCondensedExtraBoldItalic_ttf, BinaryData::BarlowCondensedExtraBoldItalic_ttfSize);
     static const auto mono    = juce::Typeface::createSystemTypefaceFor (BinaryData::JetBrainsMonoRegular_ttf, BinaryData::JetBrainsMonoRegular_ttfSize);
     const auto& tf = k == FontKind::regular ? regular : k == FontKind::semi ? semi : k == FontKind::bold ? bold : k == FontKind::brand ? brand : mono;
-    // CSS pixel size -> JUCE height in pixels
-    return juce::Font (juce::FontOptions (tf).withHeight (px));
+    // CSS pixel size (em) -> JUCE height in pixels: JUCE's height is ascent + descent, which is 1.2 em for
+    // Barlow Condensed and 1.32 em for JetBrains Mono (hhea metrics of the bundled files).
+    return juce::Font (juce::FontOptions (tf).withHeight (px * (k == FontKind::mono ? 1.32f : 1.2f)));
 }
 } // namespace theme
