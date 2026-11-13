@@ -3,7 +3,15 @@
 A free, open source, cat-themed multiband compressor and multiband sidechain in one plugin (VST3, Linux first). Two pages, one toggle: **Compressor** (up to 4 bands, per band compressor and limiter, DPC pattern compressor, master limiter) and **Sidechain** (low and high envelopes, audio, MIDI or host sync trigger, two EQs, editable envelope curves).
 
 ## Status
-Design mockup only. The interactive mockup in `docs/mockup/` runs a WebAudio preview of the planned sound. The plugin itself is not built yet; the approved mockup will be ported natively to JUCE.
+Test release v0.1.1 (pre-release). The plugin is built natively in JUCE from the approved mockup: both pages, linear-phase crossovers, per band compressor and limiter, DPC patterns, sidechain page, presets and a manual. Not tuned by ear in a DAW yet, so expect rough edges.
+
+<p align="center"><img src="docs/screenshot.png" alt="MultiPaw Compressor, Compressor page" width="900"></p>
+<p align="center"><img src="docs/screenshot2.png" alt="MultiPaw Compressor, Sidechain page" width="900"></p>
+
+## Download
+- [MultiPawCompressor-0.1.1.zip](https://github.com/SpeakingColors/multipawcompressor/releases/download/v0.1.1/MultiPawCompressor-0.1.1.zip): installers, manual and instructions in one zip
+- [Release page](https://github.com/SpeakingColors/multipawcompressor/releases/tag/v0.1.1)
+- [Manual](docs/manual.html)
 
 ## Try the mockup
 Open `docs/mockup/MultiPaw.html` in a browser. Nothing is sent anywhere; it works offline.
