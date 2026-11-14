@@ -1,0 +1,41 @@
+# build output
+build/
+build-*/
+cmake-build-*/
+out/
+dist/
+CMakeCache.txt
+CMakeFiles/
+_deps/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.vst3
+*.component
+*.clap
+
+# installers and archives
+*.zip
+*.tar.gz
+*.dmg
+*.pkg
+*.AppImage
+Output/
+
+# editors and OS
+.vscode/
+.idea/
+.vs/
+*.user
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# local env
+.env
