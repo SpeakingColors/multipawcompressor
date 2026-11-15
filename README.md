@@ -1,5 +1,7 @@
 # MultiPaw Compressor
 
+<p align="center"><a href="https://ko-fi.com/studio87"><img src="https://raw.githubusercontent.com/SpeakingColors/.github/main/assets/kofi-banner.svg" alt="Support Studio 87 on Ko-fi" width="440"></a></p>
+
 A free, open source, cat-themed multiband compressor and multiband sidechain in one plugin (VST3, Linux first). Two pages, one toggle: **Compressor** (up to 4 bands, per band compressor and limiter, DPC pattern compressor, master limiter) and **Sidechain** (low and high envelopes, audio, MIDI or host sync trigger, two EQs, editable envelope curves).
 
 ## Status
