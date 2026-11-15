@@ -1,0 +1,65 @@
+[
+  {
+    "before": "multipawcompressor-before-drums.mp3",
+    "after": "multipawcompressor-after-drums-hardstyle-kick-bus-glue.mp3",
+    "preset": "Hardstyle Kick Bus Glue",
+    "source": "Drum loop",
+    "description": "Drum loop through the real MultiPaw C++ core with the factory preset Hardstyle Kick Bus Glue (Kick; hardstyle, kick, glue). The After clip is level matched to the Before clip (-8.3 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-bass.mp3",
+    "after": "multipawcompressor-after-bass-hardstyle-kick-bus-glue.mp3",
+    "preset": "Hardstyle Kick Bus Glue",
+    "source": "Bass line",
+    "description": "Bass line through the real MultiPaw C++ core with the factory preset Hardstyle Kick Bus Glue (Kick; hardstyle, kick, glue). The After clip is level matched to the Before clip (-8.6 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-mix.mp3",
+    "after": "multipawcompressor-after-mix-hardstyle-kick-bus-glue.mp3",
+    "preset": "Hardstyle Kick Bus Glue",
+    "source": "Full mix loop",
+    "description": "Full mix loop through the real MultiPaw C++ core with the factory preset Hardstyle Kick Bus Glue (Kick; hardstyle, kick, glue). The After clip is level matched to the Before clip (-8.4 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-drums.mp3",
+    "after": "multipawcompressor-after-drums-offbeat-pumper.mp3",
+    "preset": "Offbeat Pumper",
+    "source": "Drum loop",
+    "description": "Drum loop through the real MultiPaw C++ core with the factory preset Offbeat Pumper (Creative; offbeat, pump, dpc). The After clip is level matched to the Before clip (-3.4 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-bass.mp3",
+    "after": "multipawcompressor-after-bass-offbeat-pumper.mp3",
+    "preset": "Offbeat Pumper",
+    "source": "Bass line",
+    "description": "Bass line through the real MultiPaw C++ core with the factory preset Offbeat Pumper (Creative; offbeat, pump, dpc). The After clip is level matched to the Before clip (-5.2 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-mix.mp3",
+    "after": "multipawcompressor-after-mix-offbeat-pumper.mp3",
+    "preset": "Offbeat Pumper",
+    "source": "Full mix loop",
+    "description": "Full mix loop through the real MultiPaw C++ core with the factory preset Offbeat Pumper (Creative; offbeat, pump, dpc). The After clip is level matched to the Before clip (-4.9 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-drums.mp3",
+    "after": "multipawcompressor-after-drums-master-glue.mp3",
+    "preset": "Master Glue",
+    "source": "Drum loop",
+    "description": "Drum loop through the real MultiPaw C++ core with the factory preset Master Glue (Master; master, glue, gentle). The After clip is level matched to the Before clip (-6.5 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-bass.mp3",
+    "after": "multipawcompressor-after-bass-master-glue.mp3",
+    "preset": "Master Glue",
+    "source": "Bass line",
+    "description": "Bass line through the real MultiPaw C++ core with the factory preset Master Glue (Master; master, glue, gentle). The After clip is level matched to the Before clip (-7.0 dB)."
+  },
+  {
+    "before": "multipawcompressor-before-mix.mp3",
+    "after": "multipawcompressor-after-mix-master-glue.mp3",
+    "preset": "Master Glue",
+    "source": "Full mix loop",
+    "description": "Full mix loop through the real MultiPaw C++ core with the factory preset Master Glue (Master; master, glue, gentle). The After clip is level matched to the Before clip (-7.4 dB)."
+  }
+]
