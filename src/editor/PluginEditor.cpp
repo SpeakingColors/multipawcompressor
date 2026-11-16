@@ -2,6 +2,7 @@
 #include "Layout.h"
 #include "Theme.h"
 #include "Presets.h"
+#include "Studio87Link.h"
 #include <juce_dsp/juce_dsp.h>
 #include <complex>
 
@@ -1289,8 +1290,12 @@ struct MultiPawEditor::Impl
         if (which == "bGuide") msg = "Page 1: multiband compressor. Page 2: multiband sidechain (pumping and ducking). Hover any control for an info bubble. Double-click a knob to reset it; Shift while dragging for fine steps. Keys: B bypass, P flip pages. Double-click a crossover line, level handle or EQ point to reset it. Mix at 0% is the untouched, delayed input.";
         else if (which == "bSettings") msg = "Info bubbles and colour looks: use the System menu for engine options. (Look and bubble settings dialog arrives with the next build.)";
         else msg = "MultiPaw Compressor by Studio 87. Free and open source (AGPL-3.0-or-later). No telemetry, no data collection. https://github.com/SpeakingColors/multipawcompressor";
-        auto opts = MessageBoxOptions().withIconType (MessageBoxIconType::NoIcon).withTitle ("MultiPaw Compressor").withMessage (msg).withButton ("OK");
-        AlertWindow::showAsync (opts, nullptr);
+        auto opts = MessageBoxOptions().withIconType (MessageBoxIconType::NoIcon).withTitle ("MultiPaw Compressor").withMessage (which == "bGuide" || which == "bSettings" ? msg : msg + "\n\n" + String (studio87link::aboutLine()));
+        const bool withUpdater = which != "bGuide" && which != "bSettings";
+        // Studio 87 Gear Updater: opens studio87://open?product=multipawcompressor, no network call. Button 1 is the updater, the last button (OK) returns 0.
+        if (withUpdater) opts = opts.withButton (studio87link::buttonText());
+        opts = opts.withButton ("OK");
+        AlertWindow::showAsync (opts, [withUpdater] (int pick) { if (withUpdater && pick == 1) studio87link::openUpdater ("multipawcompressor"); });
     }
 
     // ---------------------------------------------------------------- mouse
