@@ -1292,10 +1292,10 @@ struct MultiPawEditor::Impl
         else msg = "MultiPaw Compressor by Studio 87. Free and open source (AGPL-3.0-or-later). No telemetry, no data collection. https://github.com/SpeakingColors/multipawcompressor";
         auto opts = MessageBoxOptions().withIconType (MessageBoxIconType::NoIcon).withTitle ("MultiPaw Compressor").withMessage (which == "bGuide" || which == "bSettings" ? msg : msg + "\n\n" + String (studio87link::aboutLine()));
         const bool withUpdater = which != "bGuide" && which != "bSettings";
-        // Studio 87 Gear Updater: opens studio87://open?product=multipawcompressor, no network call. Button 1 is the updater, the last button (OK) returns 0.
-        if (withUpdater) opts = opts.withButton (studio87link::buttonText());
+        // Studio 87 Gear Updater: opens studio87://open?product=multipawcompressor, no network call. Button 1 is the updater, button 2 opens the GitHub page, the last button (OK) returns 0.
+        if (withUpdater) opts = opts.withButton (studio87link::buttonText()).withButton (studio87link::githubButtonText());
         opts = opts.withButton ("OK");
-        AlertWindow::showAsync (opts, [withUpdater] (int pick) { if (withUpdater && pick == 1) studio87link::openUpdater ("multipawcompressor"); });
+        AlertWindow::showAsync (opts, [withUpdater] (int pick) { if (withUpdater && pick == 1) studio87link::openUpdater ("multipawcompressor"); else if (withUpdater && pick == 2) studio87link::openGitHub ("multipawcompressor"); });
     }
 
     // ---------------------------------------------------------------- mouse
