@@ -16,7 +16,7 @@ Test release v0.1.1 (pre-release). The plugin is built natively in JUCE from the
 - [Manual](docs/manual.html)
 
 ## Try the mockup
-Open `docs/mockup/MultiPaw.html` in a browser. Nothing is sent anywhere; it works offline.
+Open `docs/mockup/MultiPaw.html` in a browser.
 
 ## Support
 <p align="center">
